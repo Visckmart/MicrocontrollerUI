@@ -737,13 +737,13 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                     </scrollView>
-                                    <scrollView autohidesScrollers="YES" horizontalLineScroll="26" horizontalPageScroll="10" verticalLineScroll="26" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BZe-w9-GYz">
+                                    <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BZe-w9-GYz">
                                         <rect key="frame" x="508" y="8" width="180" height="584"/>
                                         <clipView key="contentView" drawsBackground="NO" id="v7Z-va-KQZ">
                                             <rect key="frame" x="1" y="1" width="178" height="582"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowHeight="24" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" outlineTableColumn="ay7-1S-Tf9" id="4C4-6c-gvH">
+                                                <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="16" outlineTableColumn="ay7-1S-Tf9" id="4C4-6c-gvH">
                                                     <rect key="frame" x="0.0" y="0.0" width="178" height="582"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
@@ -841,6 +841,9 @@
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <connections>
+                                    <action selector="sendButtonClicked:" target="XfG-lQ-9wD" id="uWb-GR-rZn"/>
+                                </connections>
                             </textField>
                             <popUpButton horizontalHuggingPriority="249" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fgL-oL-Elo">
                                 <rect key="frame" x="65" y="703" width="573" height="25"/>
@@ -859,6 +862,9 @@ CQ
                                         </items>
                                     </menu>
                                 </popUpButtonCell>
+                                <connections>
+                                    <action selector="serialListAction:" target="XfG-lQ-9wD" id="a0w-Hp-i1n"/>
+                                </connections>
                             </popUpButton>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="E08-Yp-GKk">
                                 <rect key="frame" x="645" y="699" width="73" height="32"/>
@@ -866,6 +872,9 @@ CQ
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
+                                <connections>
+                                    <action selector="connectButtonClicked:" target="XfG-lQ-9wD" id="j6e-pG-GiM"/>
+                                </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="p6y-di-Qz8">
                                 <rect key="frame" x="18" y="699" width="47" height="32"/>
@@ -873,6 +882,9 @@ CQ
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
+                                <connections>
+                                    <action selector="refreshButtonClicked:" target="XfG-lQ-9wD" id="Bqy-uN-Yah"/>
+                                </connections>
                             </button>
                             <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="cKq-0U-ag9">
                                 <rect key="frame" x="24" y="687" width="688" height="5"/>
@@ -883,6 +895,9 @@ CQ
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
+                                <connections>
+                                    <action selector="sendButtonClicked:" target="XfG-lQ-9wD" id="ftL-y1-Qdj"/>
+                                </connections>
                             </button>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bF9-Oh-wKs">
                                 <rect key="frame" x="22" y="735" width="112" height="19"/>
@@ -930,6 +945,12 @@ CQ
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="commandTextfield" destination="vbs-xv-kUa" id="yPU-RT-O3F"/>
+                        <outlet property="connectButton" destination="E08-Yp-GKk" id="rGs-DX-TRE"/>
+                        <outlet property="connectionsList" destination="fgL-oL-Elo" id="PIP-30-WCe"/>
+                        <outlet property="consoleTextView" destination="exm-bU-uP8" id="LwC-Sb-kna"/>
+                        <outlet property="refreshButton" destination="p6y-di-Qz8" id="lBY-F4-hE7"/>
+                        <outlet property="sendButton" destination="tkd-4U-0C7" id="n12-SW-6JB"/>
                         <outlet property="sideBar" destination="BZe-w9-GYz" id="6Ie-vU-4nl"/>
                     </connections>
                 </viewController>

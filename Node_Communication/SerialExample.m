@@ -6,24 +6,39 @@
 //
 
 #import "SerialExample.h"
-
+#import "Node_Communication-Swift.h"
 
 @implementation SerialExample
 
 // executes after everything in the xib/nib is initiallized
-- (void)awakeFromNib {
+- (void)prepare {
 	// we don't have a serial port open yet
 	serialFileDescriptor = -1;
 	readThreadRunning = FALSE;
 	
 	// first thing is to refresh the serial port list
-	[self refreshSerialList:@"Select a Serial Port"];
+//    [self refreshSerialList:@"Select a Serial Port"];
 	
 	// now put the cursor in the text field
-	[serialInputField becomeFirstResponder];
-	
+//    [serialInputField becomeFirstResponder];
+//    [_interface logWithString: @"Prepared!"];
 }
 
+- (void) closeSerialPort {
+    if (serialFileDescriptor != -1) {
+        close(serialFileDescriptor);
+        serialFileDescriptor = -1;
+        readThreadRunning = FALSE;
+        
+        // wait for the reading thread to die
+//        while(readThreadRunning);
+        
+        // re-opening the same port REALLY fast will fail spectacularly... better to sleep a sec
+//        sleep(0.5);
+    }
+    NSLog(@"is thread running %d", readThreadRunning);
+    [_interface updateConnectionStatusWithConnected: NO];
+}
 // open the serial port
 //   - nil is returned on success
 //   - an error message is returned otherwise
@@ -44,7 +59,7 @@
 	
 	// c-string path to serial-port file
 	const char *bsdPath = [serialPortFile cStringUsingEncoding:NSUTF8StringEncoding];
-	
+    NSLog(@"Connecting to: %s", bsdPath);
 	// Hold the original termios attributes we are setting
 	struct termios options;
 	
@@ -115,18 +130,29 @@
 	}
 	
 	// make sure the port is closed if a problem happens
-	if ((serialFileDescriptor != -1) && (errorMessage != nil)) {
+	if ((serialFileDescriptor == -1) && (errorMessage != nil)) {
 		close(serialFileDescriptor);
 		serialFileDescriptor = -1;
-	}
-	
+        [self.interface logWithString:@"Connection error."];
+        [_interface updateConnectionStatusWithConnected: NO];
+    } else {
+        [self.interface logWithString:@"Successfully connected!"];
+        [_interface updateConnectionStatusWithConnected: YES];
+    }
+    
 	return errorMessage;
+}
+
+-(void) callSelec {
+    
+    [self performSelectorInBackground:@selector(incomingTextUpdateThread:) withObject:[NSThread currentThread]];
 }
 
 // updates the textarea for incoming text by appending text
 - (void)appendToIncomingText: (id) text {
 	// add the text to the textarea
 	NSAttributedString* attrString = [[NSMutableAttributedString alloc] initWithString: text];
+    NSLog(@"text");
 	NSTextStorage *textStorage = [serialOutputArea textStorage];
 	[textStorage beginEditing];
 	[textStorage appendAttributedString:attrString];
@@ -137,7 +163,8 @@
 	NSRange myRange;
 	myRange.length = 1;
 	myRange.location = [textStorage length];
-	[serialOutputArea scrollRangeToVisible:myRange]; 
+	[serialOutputArea scrollRangeToVisible:myRange];
+    [self.interface logWithString:text];
 }
 
 // This selector/function will be called as another thread...
@@ -150,7 +177,7 @@
 	
 	// mark that the thread is running
 	readThreadRunning = TRUE;
-	
+    NSLog(@"Thread running");
 	const int BUFFER_SIZE = 100;
 	char byte_buffer[BUFFER_SIZE]; // buffer for holding incoming data
 	int numBytes=0; // number of bytes read during read
@@ -160,7 +187,7 @@
 	[NSThread setThreadPriority:1.0];
 	
 	// this will loop unitl the serial port closes
-	while(TRUE) {
+	while(readThreadRunning) {
         if (serialFileDescriptor == -1) { break; }
 		// read() blocks until some data is available or the port is closed
 		numBytes = read(serialFileDescriptor, byte_buffer, BUFFER_SIZE); // read up to the size of the buffer
@@ -191,34 +218,37 @@
 //    [pool release];
 }
 
-- (void) refreshSerialList: (NSString *) selectedText {
+- (NSArray *) refreshSerialList {
+    NSMutableArray * serialList = [[NSMutableArray alloc] init];
+    
 	io_object_t serialPort;
 	io_iterator_t serialPortIterator;
 	
 	// remove everything from the pull down list
-	[serialListPullDown removeAllItems];
+//    [serialListPullDown removeAllItems];
 	
 	// ask for all the serial ports
 	IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching(kIOSerialBSDServiceValue), &serialPortIterator);
 	
 	// loop through all the serial ports and add them to the array
 	while ((serialPort = IOIteratorNext(serialPortIterator))) {
-		[serialListPullDown addItemWithTitle:
+		[serialList addObject:
          (__bridge NSString*)IORegistryEntryCreateCFProperty(serialPort, CFSTR(kIOCalloutDeviceKey),  kCFAllocatorDefault, 0)];
 		IOObjectRelease(serialPort);
 	}
 	
-	// add the selected text to the top
-	[serialListPullDown insertItemWithTitle:selectedText atIndex:0];
-	[serialListPullDown selectItemAtIndex:0];
+//    // add the selected text to the top
+//    [serialListPullDown insertItemWithTitle:selectedText atIndex:0];
+//    [serialListPullDown selectItemAtIndex:0];
 	
 	IOObjectRelease(serialPortIterator);
+    return [serialList copy];
 }
 
 // send a string to the serial port
 - (void) writeString: (NSString *) str {
 	if(serialFileDescriptor!=-1) {
-        NSString * temp = [str stringByAppendingString:[NSString stringWithFormat:@"%c%c%c", 59, 13, 10]];
+        NSString * temp = [str stringByAppendingString:[NSString stringWithFormat:@"%c%c", 13, 10]];
         NSLog(@"%s", [temp cStringUsingEncoding:NSASCIIStringEncoding]);
 		write(serialFileDescriptor, [temp cStringUsingEncoding:NSASCIIStringEncoding], [temp length]);
 	} else {
@@ -243,10 +273,10 @@
 	NSString *error = [self openSerialPort: [serialListPullDown titleOfSelectedItem] baud:[baudInputField intValue]];
 	
 	if(error!=nil) {
-		[self refreshSerialList:error];
+		[self refreshSerialList];
 		[self appendToIncomingText:error];
 	} else {
-		[self refreshSerialList:[serialListPullDown titleOfSelectedItem]];
+		[self refreshSerialList];
 		[self performSelectorInBackground:@selector(incomingTextUpdateThread:) withObject:[NSThread currentThread]];
 	}
 }
@@ -259,7 +289,7 @@
 		// if the new baud rate isn't possible, refresh the serial list
 		//   this will also deselect the current serial port
 		if(ioctl(serialFileDescriptor, IOSSIOSPEED, &baudRate)==-1) {
-			[self refreshSerialList:@"Error: Baud Rate out of bounds"];
+			[self refreshSerialList];
 			[self appendToIncomingText:@"Error: Baud Rate out of bounds"];
 		}
 	}
@@ -267,7 +297,7 @@
 
 // action from refresh button 
 - (IBAction) refreshAction: (id) cntrl {
-	[self refreshSerialList:@"Select a Serial Port"];
+	[self refreshSerialList];
 	
 	// close serial port if open
 	if (serialFileDescriptor != -1) {

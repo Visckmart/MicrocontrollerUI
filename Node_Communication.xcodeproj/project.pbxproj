@@ -13,6 +13,7 @@
 		7E81C12E222B5C1F001FCAC7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7E81C12C222B5C1F001FCAC7 /* Main.storyboard */; };
 		7E81C139222B5C36001FCAC7 /* SerialExample.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C137222B5C35001FCAC7 /* SerialExample.m */; };
 		7E81C13B222B7F03001FCAC7 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C13A222B7F03001FCAC7 /* WindowController.swift */; };
+		7E81C13D222B942A001FCAC7 /* InterfaceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C13C222B942A001FCAC7 /* InterfaceProtocol.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		7E81C137222B5C35001FCAC7 /* SerialExample.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SerialExample.m; sourceTree = "<group>"; };
 		7E81C138222B5C36001FCAC7 /* SerialExample.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SerialExample.h; sourceTree = "<group>"; };
 		7E81C13A222B7F03001FCAC7 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
+		7E81C13C222B942A001FCAC7 /* InterfaceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfaceProtocol.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +66,7 @@
 				7E81C128222B5C1D001FCAC7 /* ViewController.swift */,
 				7E81C138222B5C36001FCAC7 /* SerialExample.h */,
 				7E81C137222B5C35001FCAC7 /* SerialExample.m */,
+				7E81C13C222B942A001FCAC7 /* InterfaceProtocol.swift */,
 				7E81C12A222B5C1F001FCAC7 /* Assets.xcassets */,
 				7E81C12C222B5C1F001FCAC7 /* Main.storyboard */,
 				7E81C12F222B5C1F001FCAC7 /* Info.plist */,
@@ -147,6 +150,7 @@
 				7E81C129222B5C1D001FCAC7 /* ViewController.swift in Sources */,
 				7E81C13B222B7F03001FCAC7 /* WindowController.swift in Sources */,
 				7E81C127222B5C1D001FCAC7 /* AppDelegate.swift in Sources */,
+				7E81C13D222B942A001FCAC7 /* InterfaceProtocol.swift in Sources */,
 				7E81C139222B5C36001FCAC7 /* SerialExample.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
