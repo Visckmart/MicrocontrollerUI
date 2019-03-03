@@ -841,12 +841,9 @@
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
-                                <connections>
-                                    <action selector="sendButtonClicked:" target="XfG-lQ-9wD" id="uWb-GR-rZn"/>
-                                </connections>
                             </textField>
-                            <popUpButton horizontalHuggingPriority="249" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fgL-oL-Elo">
-                                <rect key="frame" x="65" y="703" width="573" height="25"/>
+                            <popUpButton horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="fgL-oL-Elo">
+                                <rect key="frame" x="65" y="703" width="421" height="25"/>
                                 <popUpButtonCell key="cell" type="push" title="wchusbserial1420" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" enabled="NO" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="6tb-3U-KP8" id="umK-fu-Lpy">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="menu"/>
@@ -915,6 +912,13 @@ CQ
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="3v1-lJ-fRA">
+                                <rect key="frame" x="489" y="708" width="156" height="18"/>
+                                <buttonCell key="cell" type="check" title="Restart on connection" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="fJK-oK-wZn">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                            </button>
                         </subviews>
                         <constraints>
                             <constraint firstItem="exm-bU-uP8" firstAttribute="top" secondItem="hLP-Wh-PQP" secondAttribute="bottom" constant="8" id="1FK-DB-ldZ"/>
@@ -926,14 +930,17 @@ CQ
                             <constraint firstItem="p6y-di-Qz8" firstAttribute="centerY" secondItem="fgL-oL-Elo" secondAttribute="centerY" id="EUz-gu-VRC"/>
                             <constraint firstAttribute="trailing" secondItem="E08-Yp-GKk" secondAttribute="trailing" constant="24" id="Hhn-jY-56Y"/>
                             <constraint firstItem="hLP-Wh-PQP" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="24" id="NOR-Un-CvB"/>
+                            <constraint firstItem="3v1-lJ-fRA" firstAttribute="centerY" secondItem="fgL-oL-Elo" secondAttribute="centerY" id="Pky-4j-WDZ"/>
                             <constraint firstItem="tkd-4U-0C7" firstAttribute="leading" secondItem="vbs-xv-kUa" secondAttribute="trailing" constant="16" id="RS7-an-LR5"/>
                             <constraint firstItem="kBx-mz-iH0" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="24" id="XPB-dB-BO4"/>
                             <constraint firstItem="bF9-Oh-wKs" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="24" id="YNo-zv-z8i"/>
                             <constraint firstItem="vbs-xv-kUa" firstAttribute="top" secondItem="kBx-mz-iH0" secondAttribute="bottom" constant="8" id="a1q-A8-3F2"/>
                             <constraint firstItem="cKq-0U-ag9" firstAttribute="top" secondItem="fgL-oL-Elo" secondAttribute="bottom" constant="16" id="bPv-r2-ek0"/>
                             <constraint firstItem="fgL-oL-Elo" firstAttribute="top" secondItem="bF9-Oh-wKs" secondAttribute="bottom" constant="8" id="cAS-CQ-oHm"/>
+                            <constraint firstItem="3v1-lJ-fRA" firstAttribute="leading" secondItem="fgL-oL-Elo" secondAttribute="trailing" constant="8" id="gHI-by-wyh"/>
                             <constraint firstAttribute="trailing" secondItem="cKq-0U-ag9" secondAttribute="trailing" constant="24" id="kid-Ej-QcM"/>
                             <constraint firstItem="p6y-di-Qz8" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="24" id="lKg-Gd-urQ"/>
+                            <constraint firstItem="E08-Yp-GKk" firstAttribute="leading" secondItem="3v1-lJ-fRA" secondAttribute="trailing" constant="8" id="loH-v1-FLH"/>
                             <constraint firstItem="fgL-oL-Elo" firstAttribute="leading" secondItem="p6y-di-Qz8" secondAttribute="trailing" constant="8" id="o6A-xZ-Js7"/>
                             <constraint firstAttribute="bottom" secondItem="vbs-xv-kUa" secondAttribute="bottom" constant="24" id="r1t-A2-dgk"/>
                             <constraint firstItem="E08-Yp-GKk" firstAttribute="centerY" secondItem="fgL-oL-Elo" secondAttribute="centerY" id="sq0-9L-xCq"/>
@@ -941,7 +948,6 @@ CQ
                             <constraint firstAttribute="trailing" secondItem="tkd-4U-0C7" secondAttribute="trailing" constant="24" id="vlP-R3-bNY"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="bF9-Oh-wKs" secondAttribute="trailing" constant="24" id="vyb-O0-V34"/>
                             <constraint firstItem="cKq-0U-ag9" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="24" id="xUc-RD-ae9"/>
-                            <constraint firstItem="E08-Yp-GKk" firstAttribute="leading" secondItem="fgL-oL-Elo" secondAttribute="trailing" constant="16" id="y8A-bm-fDx"/>
                         </constraints>
                     </view>
                     <connections>
@@ -950,6 +956,7 @@ CQ
                         <outlet property="connectionsList" destination="fgL-oL-Elo" id="PIP-30-WCe"/>
                         <outlet property="consoleTextView" destination="exm-bU-uP8" id="LwC-Sb-kna"/>
                         <outlet property="refreshButton" destination="p6y-di-Qz8" id="lBY-F4-hE7"/>
+                        <outlet property="restartCheckbox" destination="3v1-lJ-fRA" id="2rJ-Yo-hYn"/>
                         <outlet property="sendButton" destination="tkd-4U-0C7" id="n12-SW-6JB"/>
                         <outlet property="sideBar" destination="BZe-w9-GYz" id="6Ie-vU-4nl"/>
                     </connections>

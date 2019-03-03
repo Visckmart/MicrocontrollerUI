@@ -29,22 +29,23 @@
 }
 @property (weak) id <Writes> interface;
 - (void) prepare;
-- (void) callSelec;
+//- (void) callSelec;
+- (void) restart;
 - (void) closeSerialPort;
 - (NSString *) openSerialPort: (NSString *)serialPortFile baud: (speed_t)baudRate;
-- (void)appendToIncomingText: (id) text;
+//- (void)appendToIncomingText: (id) text;
 - (void)incomingTextUpdateThread: (NSThread *) parentThread;
 - (NSArray *) refreshSerialList;
 - (void) writeString: (NSString *) str;
-- (void) writeByte: (uint8_t *) val;
-- (IBAction) serialPortSelected: (id) cntrl;
-- (IBAction) baudAction: (id) cntrl;
-- (IBAction) refreshAction: (id) cntrl;
-- (IBAction) sendText: (id) cntrl;
-- (IBAction) sliderChange: (NSSlider *) sldr;
-- (IBAction) hitAButton: (NSButton *) btn;
-- (IBAction) hitBButton: (NSButton *) btn;
-- (IBAction) hitCButton: (NSButton *) btn;
+//- (void) writeByte: (uint8_t *) val;
+//- (IBAction) serialPortSelected: (id) cntrl;
+//- (IBAction) baudAction: (id) cntrl;
+//- (IBAction) refreshAction: (id) cntrl;
+//- (IBAction) sendText: (id) cntrl;
+//- (IBAction) sliderChange: (NSSlider *) sldr;
+//- (IBAction) hitAButton: (NSButton *) btn;
+//- (IBAction) hitBButton: (NSButton *) btn;
+//- (IBAction) hitCButton: (NSButton *) btn;
 - (IBAction) resetButton: (NSButton *) btn;
 
 @end

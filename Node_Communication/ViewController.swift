@@ -20,6 +20,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     
     @IBOutlet weak var commandTextfield: NSTextField!
     @IBOutlet weak var sendButton: NSButton!
+    @IBOutlet weak var restartCheckbox: NSButton!
     
     private var isConnected: Bool = false
     private var devicesList: [String] = []
@@ -41,6 +42,11 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         serial.prepare()
         refreshList()
         commandTextfield.delegate = self
+//        connectButton.keyEquivalent = "\r"
+        sendButton.keyEquivalent = "\r"
+//        connectButton.becomeFirstResponder()
+//        self.view.window?.makeFirstResponder(connectButton)
+        restartCheckbox.keyEquivalent = "r"
     }
 
     
@@ -63,6 +69,10 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
             connectedDevices = tryCleaningNames(deviceNames: connectedDevices)
             connectionsList.addItems(withTitles: connectedDevices)
             connectionsList.isEnabled = true
+            if let favorite = UserDefaults.standard.string(forKey: "favorite"),
+                let positionOfFav = devicesList.firstIndex(of: favorite) {
+                connectionsList.selectItem(at: positionOfFav)
+            }
             connectButton.isEnabled = true
         } else {
             connectionsList.isEnabled = false
@@ -87,20 +97,26 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
                 print("No item selected")
                 return
             }
-            print("Would try to connect to \(devicesList[indexOfSelectedItem])")
-            print(serial.openSerialPort(devicesList[indexOfSelectedItem], baud: speed_t(115200)))
+            print("Will try to connect to \(devicesList[indexOfSelectedItem])")
+            let item = devicesList[indexOfSelectedItem]
+            print(serial.openSerialPort(item, baud: speed_t(115200)))
+            if restartCheckbox.state == .on {
+                serial.restart()
+            }
 //            serial.callSelec()
             serial.performSelector(inBackground: #selector(serial.incomingTextUpdate(_:)), with: Thread.main)
+            print("Favorite: \(UserDefaults.standard.string(forKey: "favorite") ?? "no favorite")")
+            UserDefaults.standard.set(item, forKey: "favorite")
         } else {
             print("Would try to disconnect.")
-            serial.closeSerialPort()
+//            serial.closeSerialPort()
         }
     }
     
     var canWrite = false
     
     func log(string: String) {
-        print("Write called")
+//        print("Write called")
         
         var newString = string
         if string.contains("NodeMCU") {
@@ -108,7 +124,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
             newString = String(newString.suffix(from: newString.firstIndex(of: "N")!))
         }
         if canWrite {
-            consoleTextStorage.append(NSAttributedString(string: newString + "\n"))
+            consoleTextStorage.append(NSAttributedString(string: newString))
             (consoleTextView.documentView as! NSTextView).scrollToEndOfDocument(self)
         }
     }
@@ -163,7 +179,12 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     }
     
     func adaptLayout() {
-        sideBar.isHidden = view.frame.width < 500
+        sideBar.isHidden = view.frame.width < 515
+        if view.frame.width <= 515 {
+            restartCheckbox.title = "Restart"
+        } else {
+            restartCheckbox.title = "Restart on connection"
+        }
     }
 
 
