@@ -10,6 +10,7 @@ import Cocoa
 
 class ViewController: NSViewController {
 
+    @IBOutlet weak var sideBar: NSScrollView!
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -20,6 +21,11 @@ class ViewController: NSViewController {
         didSet {
         // Update the view, if already loaded.
         }
+    }
+    
+    
+    func adaptLayout() {
+        sideBar.isHidden = view.frame.width < 500
     }
 
 
