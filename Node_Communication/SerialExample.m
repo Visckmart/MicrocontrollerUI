@@ -26,9 +26,9 @@
 
 - (void) closeSerialPort {
     if (serialFileDescriptor != -1) {
+        readThreadRunning = FALSE;
         close(serialFileDescriptor);
         serialFileDescriptor = -1;
-        readThreadRunning = FALSE;
         
         // wait for the reading thread to die
 //        while(readThreadRunning);
@@ -148,24 +148,24 @@
     [self performSelectorInBackground:@selector(incomingTextUpdateThread:) withObject:[NSThread currentThread]];
 }
 
-// updates the textarea for incoming text by appending text
-- (void)appendToIncomingText: (id) text {
-	// add the text to the textarea
-	NSAttributedString* attrString = [[NSMutableAttributedString alloc] initWithString: text];
-    NSLog(@"text");
-	NSTextStorage *textStorage = [serialOutputArea textStorage];
-	[textStorage beginEditing];
-	[textStorage appendAttributedString:attrString];
-	[textStorage endEditing];
-//    [attrString release];
-	
-	// scroll to the bottom
-	NSRange myRange;
-	myRange.length = 1;
-	myRange.location = [textStorage length];
-	[serialOutputArea scrollRangeToVisible:myRange];
-    [self.interface logWithString:text];
-}
+//// updates the textarea for incoming text by appending text
+//- (void)appendToIncomingText: (id) text {
+//    // add the text to the textarea
+//    NSAttributedString* attrString = [[NSMutableAttributedString alloc] initWithString: text];
+//    NSLog(@"text");
+//    NSTextStorage *textStorage = [serialOutputArea textStorage];
+//    [textStorage beginEditing];
+//    [textStorage appendAttributedString:attrString];
+//    [textStorage endEditing];
+////    [attrString release];
+//
+//    // scroll to the bottom
+//    NSRange myRange;
+//    myRange.length = 1;
+//    myRange.location = [textStorage length];
+//    [serialOutputArea scrollRangeToVisible:myRange];
+//    [self.interface logWithString:text];
+//}
 
 // This selector/function will be called as another thread...
 //  this thread will read from the serial port and exits when the port is closed
@@ -180,7 +180,7 @@
     NSLog(@"Thread running");
 	const int BUFFER_SIZE = 100;
 	char byte_buffer[BUFFER_SIZE]; // buffer for holding incoming data
-	int numBytes=0; // number of bytes read during read
+	long numBytes=0; // number of bytes read during read
 	NSString *text; // incoming text from the serial port
 	
 	// assign a high priority to this thread
@@ -197,9 +197,12 @@
 //            NSLog(@"incoming: %@", text);
 			// this text can't be directly sent to the text area from this thread
 			//  BUT, we can call a selctor on the main thread.
-			[self performSelectorOnMainThread:@selector(appendToIncomingText:)
-					       withObject:text
-					    waitUntilDone:YES];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.interface logWithString:text];
+            });
+//            [self performSelectorOnMainThread:@selector(appendToIncomingText:)
+//                           withObject:text
+//                        waitUntilDone:YES];
 		} else {
 			break; // Stop the thread if there is an error
 		}
@@ -257,85 +260,63 @@
 	}
 }
 
-// send a byte to the serial port
-- (void) writeByte: (uint8_t *) val {
-	if(serialFileDescriptor!=-1) {
-		write(serialFileDescriptor, val, 1);
-	} else {
-		// make sure the user knows they should select a serial port
-		[self appendToIncomingText:@"\n ERROR:  Select a Serial Port from the pull-down menu\n"];
-	}
-}
+//// send a byte to the serial port
+//- (void) writeByte: (uint8_t *) val {
+//    if(serialFileDescriptor!=-1) {
+//        write(serialFileDescriptor, val, 1);
+//    } else {
+//        // make sure the user knows they should select a serial port
+//        [self appendToIncomingText:@"\n ERROR:  Select a Serial Port from the pull-down menu\n"];
+//    }
+//}
 
-// action sent when serial port selected
-- (IBAction) serialPortSelected: (id) cntrl {
-	// open the serial port
-	NSString *error = [self openSerialPort: [serialListPullDown titleOfSelectedItem] baud:[baudInputField intValue]];
-	
-	if(error!=nil) {
-		[self refreshSerialList];
-		[self appendToIncomingText:error];
-	} else {
-		[self refreshSerialList];
-		[self performSelectorInBackground:@selector(incomingTextUpdateThread:) withObject:[NSThread currentThread]];
-	}
-}
+//// action sent when serial port selected
+//- (IBAction) serialPortSelected: (id) cntrl {
+//    // open the serial port
+//    NSString *error = [self openSerialPort: [serialListPullDown titleOfSelectedItem] baud:[baudInputField intValue]];
+//
+//    if(error!=nil) {
+//        [self refreshSerialList];
+//        [self appendToIncomingText:error];
+//    } else {
+//        [self refreshSerialList];
+//        [self performSelectorInBackground:@selector(incomingTextUpdateThread:) withObject:[NSThread currentThread]];
+//    }
+//}
+//
+//// action from baud rate change
+//- (IBAction) baudAction: (id) cntrl {
+//    if (serialFileDescriptor != -1) {
+//        speed_t baudRate = [baudInputField intValue];
+//
+//        // if the new baud rate isn't possible, refresh the serial list
+//        //   this will also deselect the current serial port
+//        if(ioctl(serialFileDescriptor, IOSSIOSPEED, &baudRate)==-1) {
+//            [self refreshSerialList];
+//            [self appendToIncomingText:@"Error: Baud Rate out of bounds"];
+//        }
+//    }
+//}
 
-// action from baud rate change
-- (IBAction) baudAction: (id) cntrl {
-	if (serialFileDescriptor != -1) {
-		speed_t baudRate = [baudInputField intValue];
-		
-		// if the new baud rate isn't possible, refresh the serial list
-		//   this will also deselect the current serial port
-		if(ioctl(serialFileDescriptor, IOSSIOSPEED, &baudRate)==-1) {
-			[self refreshSerialList];
-			[self appendToIncomingText:@"Error: Baud Rate out of bounds"];
-		}
-	}
-}
+//// action from refresh button
+//- (IBAction) refreshAction: (id) cntrl {
+//    [self refreshSerialList];
+//
+//    // close serial port if open
+//    if (serialFileDescriptor != -1) {
+//        close(serialFileDescriptor);
+//        serialFileDescriptor = -1;
+//    }
+//}
 
-// action from refresh button 
-- (IBAction) refreshAction: (id) cntrl {
-	[self refreshSerialList];
-	
-	// close serial port if open
-	if (serialFileDescriptor != -1) {
-		close(serialFileDescriptor);
-		serialFileDescriptor = -1;
-	}
-}
-
-// action from send button and on return in the text field
-- (IBAction) sendText: (id) cntrl {
-	// send the text to the Arduino
-	[self writeString:[serialInputField stringValue]];
-	
-	// blank the field
-	serialInputField.stringValue = @"";
-}
-
-// action from send button and on return in the text field
-- (IBAction) sliderChange: (NSSlider *) sldr {
-	uint8_t val = [sldr intValue];
-	[self writeByte:&val];
-}
-
-
-// action from the A button
-- (IBAction) hitAButton: (NSButton *) btn {
-	[self writeString:@"A"];
-}
-
-// action from the B button
-- (IBAction) hitBButton: (NSButton *) btn {
-	[self writeString:@"B"];
-}
-
-// action from the C button
-- (IBAction) hitCButton: (NSButton *) btn {
-	[self writeString:@"C"];
-}
+//// action from send button and on return in the text field
+//- (IBAction) sendText: (id) cntrl {
+//    // send the text to the Arduino
+//    [self writeString:[serialInputField stringValue]];
+//
+//    // blank the field
+//    serialInputField.stringValue = @"";
+//}
 
 // action from the reset button
 - (IBAction) resetButton: (NSButton *) btn {

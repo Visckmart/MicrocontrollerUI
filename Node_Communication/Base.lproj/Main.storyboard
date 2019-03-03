@@ -883,7 +883,7 @@ CQ
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
                                 <connections>
-                                    <action selector="refreshButtonClicked:" target="XfG-lQ-9wD" id="Bqy-uN-Yah"/>
+                                    <action selector="refreshList" target="XfG-lQ-9wD" id="riZ-Fp-yet"/>
                                 </connections>
                             </button>
                             <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="cKq-0U-ag9">

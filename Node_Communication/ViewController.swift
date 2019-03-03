@@ -22,6 +22,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     @IBOutlet weak var sendButton: NSButton!
     
     private var isConnected: Bool = false
+    private var devicesList: [String] = []
     private var consoleTextStorage: NSTextStorage {
         get {
             return (consoleTextView.documentView as! NSTextView).textStorage!
@@ -42,11 +43,25 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         commandTextfield.delegate = self
     }
 
-    private func refreshList() {
+    
+    func tryCleaningNames(deviceNames: [String]) -> [String] {
+        var newNames = [String]()
+        for deviceName in deviceNames {
+            if deviceName.starts(with: "/dev/cu.") {
+                let newStartIndex = deviceName.index(deviceName.startIndex, offsetBy: 8)
+                newNames.append(String(deviceName.suffix(from: newStartIndex)))
+            }
+        }
+        return newNames
+    }
+    
+    @IBAction func refreshList(_ sender: NSButton? = nil) {
 //        print(serial.refreshSerialList())
         connectionsList.removeAllItems()
-        if let newItems = serial.refreshSerialList() as? [String] {
-            connectionsList.addItems(withTitles: newItems)
+        if var connectedDevices = serial.refreshSerialList() as? [String] {
+            self.devicesList = connectedDevices
+            connectedDevices = tryCleaningNames(deviceNames: connectedDevices)
+            connectionsList.addItems(withTitles: connectedDevices)
             connectionsList.isEnabled = true
             connectButton.isEnabled = true
         } else {
@@ -61,19 +76,21 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         }
     }
     
-    @IBAction func refreshButtonClicked(_ sender: NSButton) {
-        refreshList()
-    }
-    
     @IBAction func serialListAction(_ sender: Any) {
 //        print(connectionsList.selectedItem?.title)
     }
     
     @IBAction func connectButtonClicked(_ sender: NSButton) {
         if isConnected == false {
-            print("Would try to connect to \(connectionsList.selectedItem?.title ?? "nothing")")
-            print(serial.openSerialPort(connectionsList.selectedItem!.title, baud: speed_t(115200)))
-            serial.callSelec()
+            let indexOfSelectedItem = connectionsList.indexOfSelectedItem
+            guard indexOfSelectedItem != -1 else {
+                print("No item selected")
+                return
+            }
+            print("Would try to connect to \(devicesList[indexOfSelectedItem])")
+            print(serial.openSerialPort(devicesList[indexOfSelectedItem], baud: speed_t(115200)))
+//            serial.callSelec()
+            serial.performSelector(inBackground: #selector(serial.incomingTextUpdate(_:)), with: Thread.main)
         } else {
             print("Would try to disconnect.")
             serial.closeSerialPort()
