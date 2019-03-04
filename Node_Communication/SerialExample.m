@@ -15,13 +15,6 @@
 	// we don't have a serial port open yet
 	serialFileDescriptor = -1;
 	readThreadRunning = FALSE;
-	
-	// first thing is to refresh the serial port list
-//    [self refreshSerialList:@"Select a Serial Port"];
-	
-	// now put the cursor in the text field
-//    [serialInputField becomeFirstResponder];
-//    [_interface logWithString: @"Prepared!"];
 }
 
 - (void) closeSerialPort {
@@ -71,7 +64,7 @@
 	
 	// open the port
 	//     O_NONBLOCK causes the port to open without any delay (we'll block with another call)
-    NSLog(@"%s", bsdPath);
+    
 	serialFileDescriptor = open(bsdPath, O_RDWR | O_NOCTTY | O_NONBLOCK );
 	
 	if (serialFileDescriptor == -1) { 
@@ -149,7 +142,6 @@
 	
 	// mark that the thread is running
 	readThreadRunning = TRUE;
-    NSLog(@"Thread running");
 	const int BUFFER_SIZE = 100;
 	char byte_buffer[BUFFER_SIZE]; // buffer for holding incoming data
 	long numBytes=0; // number of bytes read during read

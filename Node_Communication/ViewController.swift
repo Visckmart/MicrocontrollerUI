@@ -10,27 +10,45 @@ import Cocoa
 
 class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     
-
+    // MARK: Communication elements
     @IBOutlet weak var refreshButton: NSButton!
     @IBOutlet weak var connectionsList: NSPopUpButton!
     @IBOutlet weak var connectButton: NSButton!
     
+    // MARK: Console and Sidebar
     @IBOutlet weak var consoleTextView: NSScrollView!
-    @IBOutlet weak var sideBar: NSScrollView!
+    @IBOutlet weak var sideBarWrapper: NSScrollView!
+    private var sideBar: NSOutlineView {
+        return sideBarWrapper.documentView as! NSOutlineView
+    }
     
+    // MARK: Command elements
     @IBOutlet weak var commandTextfield: NSTextField!
     @IBOutlet weak var sendButton: NSButton!
     @IBOutlet weak var restartCheckbox: NSButton!
     
+    // MARK: Logic variables
+    
     private var isConnected: Bool = false
-    private var devicesList: [String] = []
+    private var rawDeviceNames: [String] = []
     private var consoleTextStorage: NSTextStorage {
         get {
             return (consoleTextView.documentView as! NSTextView).textStorage!
         }
     }
     
+    var favoriteDevice: String? {
+        get {
+            return UserDefaults.standard.string(forKey: "favorite")
+        }
+        set {
+            UserDefaults.standard.set(favoriteDevice, forKey: "favorite")
+        }
+    }
+    
     let serial = SerialExample()
+    
+    // MARK: - Setup e Layout
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,47 +60,44 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         serial.prepare()
         refreshList()
         commandTextfield.delegate = self
-//        connectButton.keyEquivalent = "\r"
         sendButton.keyEquivalent = "\r"
-//        connectButton.becomeFirstResponder()
-//        self.view.window?.makeFirstResponder(connectButton)
         restartCheckbox.keyEquivalent = "r"
+        sideBar.doubleAction = Selector("doubleClickOnResultRow")
+    }
+    
+    @objc func doubleClickOnResultRow()
+    {
+        print("doubleClickOnResultRow \((sideBarWrapper.documentView as? NSOutlineView)?.clickedRow)")
+        (sideBarWrapper.documentView as? NSOutlineView)?.deselectRow((sideBarWrapper.documentView as? NSOutlineView)!.clickedRow)
+        sideBar.deselectRow(sideBar.clickedRow)
+    }
+    
+    func adaptLayout() {
+        sideBarWrapper.isHidden = view.frame.width < 515
+        if view.frame.width <= 515 {
+            restartCheckbox.title = "Restart"
+        } else {
+            restartCheckbox.title = "Restart on connection"
+        }
     }
 
-    
-    func tryCleaningNames(deviceNames: [String]) -> [String] {
-        var newNames = [String]()
-        for deviceName in deviceNames {
-            if deviceName.starts(with: "/dev/cu.") {
-                let newStartIndex = deviceName.index(deviceName.startIndex, offsetBy: 8)
-                newNames.append(String(deviceName.suffix(from: newStartIndex)))
-            }
-        }
-        return newNames
-    }
+    // MARK: - Connection Area
     
     @IBAction func refreshList(_ sender: NSButton? = nil) {
-//        print(serial.refreshSerialList())
         connectionsList.removeAllItems()
         if var connectedDevices = serial.refreshSerialList() as? [String] {
-            self.devicesList = connectedDevices
+            self.rawDeviceNames = connectedDevices
             connectedDevices = tryCleaningNames(deviceNames: connectedDevices)
             connectionsList.addItems(withTitles: connectedDevices)
             connectionsList.isEnabled = true
-            if let favorite = UserDefaults.standard.string(forKey: "favorite"),
-                let positionOfFav = devicesList.firstIndex(of: favorite) {
+            if let favoriteDevice = favoriteDevice,
+                let positionOfFav = rawDeviceNames.firstIndex(of: favoriteDevice) {
                 connectionsList.selectItem(at: positionOfFav)
             }
             connectButton.isEnabled = true
         } else {
             connectionsList.isEnabled = false
             connectButton.isEnabled = false
-        }
-    }
-    
-    override var representedObject: Any? {
-        didSet {
-        // Update the view, if already loaded.
         }
     }
     
@@ -97,21 +112,25 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
                 print("No item selected")
                 return
             }
-            print("Will try to connect to \(devicesList[indexOfSelectedItem])")
-            let item = devicesList[indexOfSelectedItem]
+            print("Will try to connect to \(rawDeviceNames[indexOfSelectedItem])")
+            let item = rawDeviceNames[indexOfSelectedItem]
             print(serial.openSerialPort(item, baud: speed_t(115200)))
-            if restartCheckbox.state == .on {
-                serial.restart()
-            }
-//            serial.callSelec()
+            if restartCheckbox.state == .on { serial.restart() }
             serial.performSelector(inBackground: #selector(serial.incomingTextUpdate(_:)), with: Thread.main)
-            print("Favorite: \(UserDefaults.standard.string(forKey: "favorite") ?? "no favorite")")
-            UserDefaults.standard.set(item, forKey: "favorite")
+            
+            print("Favorite: \(favoriteDevice ?? "no favorite")")
+            favoriteDevice = item
         } else {
             print("Would try to disconnect.")
 //            serial.closeSerialPort()
         }
     }
+    
+    @IBAction func performC(_ sender: Any) {
+        print("clicked")
+    }
+    
+    // MARK: Writes protocol
     
     var canWrite = false
     
@@ -130,13 +149,21 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     }
     
     func updateConnectionStatus(connected: Bool) {
-        print(connected)
         self.isConnected = connected
         if connected {
             connectButton.title = "Close"
         } else {
             connectButton.title = "Open"
         }
+    }
+    
+    // MARK: - Commands Area
+    
+    @IBAction func sendButtonClicked(_ sender: Any) {
+        serial.write(commandTextfield.stringValue)
+        commands.insert(commandTextfield.stringValue, at: 0)
+        commandTextfield.stringValue = ""
+        historyState = -1
     }
     
     var commands: [String] = []
@@ -147,26 +174,25 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
             } else if historyState > commands.count - 1 {
                 historyState = commands.count - 1
             }
+//            switch historyState {
+//            case ..<(-1):
+//                historyState = -1
+//            case commands.count...:
+//                historyState = commands.count - 1
+//            default: break
+//            }
         }
-    }
-    @IBAction func sendButtonClicked(_ sender: Any) {
-        serial.write(commandTextfield.stringValue)
-        commands.insert(commandTextfield.stringValue, at: 0)
-        commandTextfield.stringValue = ""
     }
     
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-        print(commandSelector)
-        if commandSelector == #selector(NSStandardKeyBindingResponding.moveUp(_:)) {
-            historyState += 1
-            if historyState < 0 {
-                commandTextfield.stringValue = ""
-            } else {
-                commandTextfield.stringValue = commands[historyState]
+//        print(commandSelector)
+        // Se o comando foi seta pra cima ou pra baixo
+        if commandSelector == moveUpSelector || commandSelector == moveDownSelector {
+            switch commandSelector {
+            case moveUpSelector:    historyState += 1
+            case moveDownSelector:  historyState -= 1
+            default: return false
             }
-            return true
-        } else if commandSelector == #selector(NSStandardKeyBindingResponding.moveDown(_:)) {
-            historyState -= 1
             if historyState < 0 {
                 commandTextfield.stringValue = ""
             } else {
@@ -175,15 +201,6 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
             return true
         } else {
             return false
-        }
-    }
-    
-    func adaptLayout() {
-        sideBar.isHidden = view.frame.width < 515
-        if view.frame.width <= 515 {
-            restartCheckbox.title = "Restart"
-        } else {
-            restartCheckbox.title = "Restart on connection"
         }
     }
 
