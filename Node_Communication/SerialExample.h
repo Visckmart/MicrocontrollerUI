@@ -26,10 +26,14 @@
 	bool readThreadRunning;
 	NSTextStorage *storage;
     NSThread * bg;
+    bool readingFiles;
+    NSString * filesOutput;
 }
 @property (weak) id <Writes> interface;
 - (void) prepare;
 //- (void) callSelec;
+- (void) runFile: (NSString *) fileName;
+- (void) readFiles;
 - (void) restart;
 - (void) closeSerialPort;
 - (NSString *) openSerialPort: (NSString *)serialPortFile baud: (speed_t)baudRate;

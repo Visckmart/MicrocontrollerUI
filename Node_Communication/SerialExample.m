@@ -146,7 +146,9 @@
 	char byte_buffer[BUFFER_SIZE]; // buffer for holding incoming data
 	long numBytes=0; // number of bytes read during read
 	NSString *text; // incoming text from the serial port
-	
+    NSString *filesText = @"";
+    NSMutableArray * f = [NSMutableArray array];
+    
 	// assign a high priority to this thread
 	[NSThread setThreadPriority:1.0];
 	
@@ -161,9 +163,48 @@
 //            NSLog(@"incoming: %@", text);
 			// this text can't be directly sent to the text area from this thread
 			//  BUT, we can call a selctor on the main thread.
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self.interface logWithString:text];
-            });
+            if (!readingFiles) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self.interface logWithString:text];
+                    if (!self->readingFiles) {
+                        NSLog(@"2not reading");
+                    } else {
+                        NSLog(@"2reading files");
+                    }
+                });
+            } else {
+                NSLog(@"reading files %@", text);
+                if ([text rangeOfString:@"\r\n\r\n"].location != NSNotFound) {
+                    NSArray * temp = [text componentsSeparatedByString:@"\n"];
+                    
+                    for (NSString * t in temp) {
+                        NSRegularExpression* regex = [[NSRegularExpression alloc] initWithPattern:@"[a-z]" options:NSRegularExpressionCaseInsensitive error:nil];
+                        if ([regex numberOfMatchesInString:t options:0 range:NSMakeRange(0, [t length])] > 0) {
+                            [f addObject: [t stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]];
+                        }
+                    }
+//                    text = [text substringFromIndex:[text rangeOfString:@"\r\r"].location];
+                    readingFiles = FALSE;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self.interface logWithString:text];
+                        NSLog(@"f is %@", [f copy]);
+                        self.interface.files = [f copy];
+                        [f removeAllObjects];
+                    });
+                    NSLog(@"Files %@", filesText);
+                } else if ([text rangeOfString:@"\n"].location != NSNotFound) {
+                    NSArray * temp = [text componentsSeparatedByString:@"\n"];
+                    
+                    for (NSString * t in temp) {
+                        NSRegularExpression* regex = [[NSRegularExpression alloc] initWithPattern:@"[a-z]" options:NSRegularExpressionCaseInsensitive error:nil];
+                        if ([regex numberOfMatchesInString:t options:0 range:NSMakeRange(0, [t length])] > 0) {
+                            [f addObject: [t stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]];
+                        }
+                    }
+//                    filesText = [filesText stringByAppendingString:[text]];
+                    NSLog(@"Files %@", f);
+                }
+            }
 //            [self performSelectorOnMainThread:@selector(appendToIncomingText:)
 //                           withObject:text
 //                        waitUntilDone:YES];
@@ -206,12 +247,22 @@
     [self writeString:@"node.restart()"];
 }
 
+- (void) runFile: (NSString *) fileName {
+    [self writeString:[NSString stringWithFormat:@"dofile(\"%@\")", fileName]];
+}
+
+- (void) readFiles {
+    readingFiles = TRUE;
+    [self writeString:@"for name in pairs(file.list()) do print(name) end print('\\r\\r')"];
+}
+
 // send a string to the serial port
 - (void) writeString: (NSString *) str {
 	if(serialFileDescriptor!=-1) {
         NSString * temp = [str stringByAppendingString:[NSString stringWithFormat:@"%c%c", 13, 10]];
         NSLog(@"%s", [temp cStringUsingEncoding:NSASCIIStringEncoding]);
 		write(serialFileDescriptor, [temp cStringUsingEncoding:NSASCIIStringEncoding], [temp length]);
+//        sleep(1);
 	} else {
 		// make sure the user knows they should select a serial port
 		[self.interface logWithString:@"\n ERROR:  Select a Serial Port from the pull-down menu"];

@@ -10,21 +10,29 @@ import Cocoa
 
 class SidebarOutlineView: NSOutlineView, NSOutlineViewDataSource, NSOutlineViewDelegate {
 
-    let nomes = ["A", "Teste", "B", "C"]
+    var nomes: [String] = []
     
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
         if item == nil {
             print("first item")
-            return nomes.count
+            return nomes.count + 1
         }
         return 0
     }
     
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
         if item == nil {
-            return nomes[index]
+            if index == 0 { return "Refresh" }
+            return nomes[index-1]
         }
         fatalError()
+    }
+    
+    func outlineView(_ outlineView: NSOutlineView, heightOfRowByItem item: Any) -> CGFloat {
+        if (item as! String) == "Refresh" {
+            return 24
+        }
+        return 20
     }
     
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
@@ -39,6 +47,9 @@ class SidebarOutlineView: NSOutlineView, NSOutlineViewDataSource, NSOutlineViewD
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
         var view: NSTableCellView?
         view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "DataCell"), owner: self) as? NSTableCellView
+        if (item as! String) == "Refresh" {
+            view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "RefreshCell"), owner: self) as? NSTableCellView
+        }
         view?.frame.size.width = outlineView.frame.width
         if let textField = view?.textField {
             //3

@@ -46,6 +46,13 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         }
     }
     
+    var files: [String] = [] {
+        didSet {
+            print("New files \(files)")
+            repopulateSideBar(with: files)
+        }
+    }
+    
     let serial = SerialExample()
     
     // MARK: - Setup e Layout
@@ -62,13 +69,33 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         commandTextfield.delegate = self
         sendButton.keyEquivalent = "\r"
         restartCheckbox.keyEquivalent = "r"
-        sideBar.doubleAction = Selector("doubleClickOnResultRow")
+        sideBar.doubleAction = #selector(ViewController.doubleClickOnResultRow)
+        
+//        (sideBar.dataSource as! SidebarOutlineView).reloadData(forRowIndexes: [sideBar.row(forItem: nil)], columnIndexes: [sideBar.column(at: .zero)])
+//        print()
+        repopulateSideBar(with: ["a"])
+//        (sideBar.dataSource as! SidebarOutlineView).reloadData()
+    }
+    
+    // TODO: Passar essa função para a classe da side bar
+    private func repopulateSideBar(with elements: [String]) {
+        (sideBar.dataSource as! SidebarOutlineView).nomes = elements
+        sideBar.removeItems(at: IndexSet(integersIn: 1..<sideBar.numberOfRows), inParent: nil, withAnimation: .effectFade)
+        if elements.count >= 1 {
+            sideBar.insertItems(at: IndexSet(integersIn: 1...elements.count), inParent: nil, withAnimation: NSTableView.AnimationOptions.effectFade)
+        }
+//        sideBar.insertItems(at: IndexSet(integer: 2), inParent: nil, withAnimation: NSTableView.AnimationOptions.effectFade)
     }
     
     @objc func doubleClickOnResultRow()
     {
         print("doubleClickOnResultRow \((sideBarWrapper.documentView as? NSOutlineView)?.clickedRow)")
         (sideBarWrapper.documentView as? NSOutlineView)?.deselectRow((sideBarWrapper.documentView as? NSOutlineView)!.clickedRow)
+        if sideBar.clickedRow == 0 {
+            serial.readFiles()
+        } else {
+            serial.runFile((sideBar.dataSource as! SidebarOutlineView).nomes[sideBar.clickedRow-1])
+        }
         sideBar.deselectRow(sideBar.clickedRow)
     }
     

@@ -11,4 +11,8 @@ import Foundation
 @objc protocol Writes {
     func log(string: String)
     func updateConnectionStatus(connected: Bool)
+    var files: [String] { get set }
 }
+
+//protocol ListsFiles {
+//}
