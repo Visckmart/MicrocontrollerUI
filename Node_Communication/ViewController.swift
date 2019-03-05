@@ -184,6 +184,20 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         }
     }
     
+    @IBAction func uploadButtonClicked(_ sender: Any) {
+        let panel = NSOpenPanel()
+        panel.begin { (response) in
+            if response == .OK {
+                print("Panel URL: \(panel.url)")
+                if let fileURL = panel.url {
+                    self.serial.write("print('Would upload file \(fileURL.lastPathComponent)')")
+                    self.serial.uploadFile(fileURL)
+                }
+            } else if response == NSApplication.ModalResponse.cancel {
+                print("cancelled")
+            }
+        }
+    }
     // MARK: - Commands Area
     
     @IBAction func sendButtonClicked(_ sender: Any) {

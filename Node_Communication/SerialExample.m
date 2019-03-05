@@ -166,6 +166,10 @@
             if (!readingFiles) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self.interface logWithString:text];
+//                    if (self->commandQueue.count > 0) {
+//                        [self writeString:self->commandQueue[0]];
+//                        [self->commandQueue removeObjectAtIndex:0];
+//                    }
                     if (!self->readingFiles) {
                         NSLog(@"2not reading");
                     } else {
@@ -254,6 +258,24 @@
 - (void) readFiles {
     readingFiles = TRUE;
     [self writeString:@"for name in pairs(file.list()) do print(name) end print('\\r\\r')"];
+}
+
+- (void) uploadFile:(NSURL *)filePath {
+    NSString * fileName = [filePath lastPathComponent];
+    NSLog(@"%@", fileName);
+    NSData * d = [@"print('Uploaded file')" dataUsingEncoding:NSUTF8StringEncoding];
+    NSString * commandBegin = [NSString stringWithFormat:@"file.open('%@', 'w+'); x = ''; i = 0; t = {}; uart.on('data', 24, function (d) x = d; i = i + #d; table.insert(t, {d, #d}); file.write(d:sub(2)); uart.on('data') end, 0)", @"uploaded.lua"];
+    NSString * commandEnd = @"file.close()";
+    //uart.on("data", 0, function (d) x = x..d; i = i + #d; table.insert(t, {d, #d}); if i >= 20 then uart.on("data") end end, 0)
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self writeString: commandBegin];
+        [self writeString: [[NSString alloc] initWithData:d encoding:NSUTF8StringEncoding]];
+        [self writeString: commandEnd];
+    });
+//    [self writeString: commandBegin];
+//    [self writeString: [[NSString alloc] initWithData:d encoding:NSUTF8StringEncoding]];
+//    [self writeString: @"a = 10"];
+//    [self writeString: commandEnd];
 }
 
 // send a string to the serial port
