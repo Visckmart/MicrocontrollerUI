@@ -67,23 +67,23 @@
     
 	serialFileDescriptor = open(bsdPath, O_RDWR | O_NOCTTY | O_NONBLOCK );
 	
-	if (serialFileDescriptor == -1) { 
+	if (serialFileDescriptor == -1) {
 		// check if the port opened correctly
 		errorMessage = @"Error: couldn't open serial port";
 	} else {
 		// TIOCEXCL causes blocking of non-root processes on this serial-port
 		success = ioctl(serialFileDescriptor, TIOCEXCL);
-		if ( success == -1) { 
+		if ( success == -1) {
 			errorMessage = @"Error: couldn't obtain lock on serial port";
 		} else {
 			success = fcntl(serialFileDescriptor, F_SETFL, 0);
-			if ( success == -1) { 
+			if ( success == -1) {
 				// clear the O_NONBLOCK flag; all calls from here on out are blocking for non-root processes
 				errorMessage = @"Error: couldn't obtain lock on serial port";
 			} else {
 				// Get the current options and save them so we can restore the default settings later.
 				success = tcgetattr(serialFileDescriptor, &gOriginalTTYAttrs);
-				if ( success == -1) { 
+				if ( success == -1) {
 					errorMessage = @"Error: couldn't get serial attributes";
 				} else {
 					// copy the old termios settings into the current
@@ -107,12 +107,12 @@
 					} else {
 						// Set baud rate (any arbitrary baud rate can be set this way)
 						success = ioctl(serialFileDescriptor, IOSSIOSPEED, &baudRate);
-						if ( success == -1) { 
+						if ( success == -1) {
 							errorMessage = @"Error: Baud Rate out of bounds";
 						} else {
 							// Set the receive latency (a.k.a. don't wait to buffer data)
 							success = ioctl(serialFileDescriptor, IOSSDATALAT, &mics);
-							if ( success == -1) { 
+							if ( success == -1) {
 								errorMessage = @"Error: coudln't set serial latency";
 							}
 						}
@@ -259,23 +259,43 @@
     readingFiles = TRUE;
     [self writeString:@"for name in pairs(file.list()) do print(name) end print('\\r\\r')"];
 }
+typedef NSString Program;
+- (Program *) prepareProgram: (NSString *)programName withData:(NSDictionary *) dataDict {
+    NSString * uploadProgramPath = [[NSBundle mainBundle] pathForResource:programName ofType:@"lua"];
+    
+    NSRegularExpression* regex = [[NSRegularExpression alloc] initWithPattern: @"<([a-z]+)>" options: NSRegularExpressionCaseInsensitive error: nil];
+    NSString * content = [NSString stringWithContentsOfFile: uploadProgramPath
+                                                   encoding: NSUTF8StringEncoding
+                                                      error: NULL];
+    NSTextCheckingResult * matchRange = [regex firstMatchInString:content options:0 range:NSMakeRange(0, content.length)];
+    while (matchRange != nil) {
+        NSString* keySubstring = [content substringWithRange:[matchRange rangeAtIndex:1]];
+        content = [content stringByReplacingCharactersInRange: matchRange.range
+                                                   withString: dataDict[keySubstring]];
+        matchRange = [regex firstMatchInString:content options:0 range:NSMakeRange(0, content.length)];
+        //        NSLog(@"Extracted: %@",content);
+    }
+    return [content stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
+}
 
 - (void) uploadFile:(NSURL *)filePath {
-    NSString * fileName = [filePath lastPathComponent];
-    NSLog(@"%@", fileName);
-    NSData * d = [@"print('Uploaded file')" dataUsingEncoding:NSUTF8StringEncoding];
-    NSString * commandBegin = [NSString stringWithFormat:@"file.open('%@', 'w+'); x = ''; i = 0; t = {}; uart.on('data', 24, function (d) x = d; i = i + #d; table.insert(t, {d, #d}); file.write(d:sub(2)); uart.on('data') end, 0)", @"uploaded.lua"];
-    NSString * commandEnd = @"file.close()";
-    //uart.on("data", 0, function (d) x = x..d; i = i + #d; table.insert(t, {d, #d}); if i >= 20 then uart.on("data") end end, 0)
+    NSData * file = [NSData dataWithContentsOfURL:filePath];
+    NSDictionary * dict = [[NSDictionary alloc]
+                           initWithObjects: @[filePath.lastPathComponent, @([file length] + 2).stringValue]
+                           forKeys: @[@"filename", @"filesize"]];
+    Program * startFileUpload = [self prepareProgram:@"FileUpload_Start" withData:dict];
+    NSLog(@"----------\n%@\n----------", startFileUpload);
+//    NSString * fileName = [filePath lastPathComponent];
+//    NSLog(@"%@", fileName);
+//    NSData * d = [@"print('Uploaded new file')" dataUsingEncoding:NSUTF8StringEncoding];
+//    NSString * commandBegin = [NSString stringWithFormat:@"file.open('%@', 'w+'); x = ''; i = 0; t = {}; uart.on('data', 24, function (d) x = d; i = i + #d; table.insert(t, {d, #d}); file.write(d:sub(2)); uart.on('data') end, 0)", @"uploaded.lua"];
+    NSString * closeFileCommand = @"file.close()";
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self writeString: commandBegin];
-        [self writeString: [[NSString alloc] initWithData:d encoding:NSUTF8StringEncoding]];
-        [self writeString: commandEnd];
+        [self writeString: startFileUpload];
+        [self writeString: [[NSString alloc] initWithData: file encoding: NSUTF8StringEncoding]];
+//        [self writeString: [[NSString alloc] initWithData:d encoding:NSUTF8StringEncoding]];
+        [self writeString: closeFileCommand];
     });
-//    [self writeString: commandBegin];
-//    [self writeString: [[NSString alloc] initWithData:d encoding:NSUTF8StringEncoding]];
-//    [self writeString: @"a = 10"];
-//    [self writeString: commandEnd];
 }
 
 // send a string to the serial port

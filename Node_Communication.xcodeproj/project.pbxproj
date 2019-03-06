@@ -16,6 +16,7 @@
 		7E81C139222B5C36001FCAC7 /* SerialExample.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C137222B5C35001FCAC7 /* SerialExample.m */; };
 		7E81C13B222B7F03001FCAC7 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C13A222B7F03001FCAC7 /* WindowController.swift */; };
 		7E81C13D222B942A001FCAC7 /* InterfaceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C13C222B942A001FCAC7 /* InterfaceProtocol.swift */; };
+		7EA5B2D7222EFFFD001947B2 /* FileUpload_Start.lua in Resources */ = {isa = PBXBuildFile; fileRef = 7EA5B2D6222EFFFD001947B2 /* FileUpload_Start.lua */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,6 +34,7 @@
 		7E81C138222B5C36001FCAC7 /* SerialExample.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SerialExample.h; sourceTree = "<group>"; };
 		7E81C13A222B7F03001FCAC7 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
 		7E81C13C222B942A001FCAC7 /* InterfaceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfaceProtocol.swift; sourceTree = "<group>"; };
+		7EA5B2D6222EFFFD001947B2 /* FileUpload_Start.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = FileUpload_Start.lua; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +77,7 @@
 				7E0F4AB5222CAD2700C0C57E /* SidebarOutlineView.swift */,
 				7E81C12A222B5C1F001FCAC7 /* Assets.xcassets */,
 				7E81C12C222B5C1F001FCAC7 /* Main.storyboard */,
+				7EA5B2D6222EFFFD001947B2 /* FileUpload_Start.lua */,
 				7E81C12F222B5C1F001FCAC7 /* Info.plist */,
 				7E81C130222B5C1F001FCAC7 /* Node_Communication.entitlements */,
 				7E81C136222B5C34001FCAC7 /* Node_Communication-Bridging-Header.h */,
@@ -143,6 +146,7 @@
 			files = (
 				7E81C12B222B5C1F001FCAC7 /* Assets.xcassets in Resources */,
 				7E81C12E222B5C1F001FCAC7 /* Main.storyboard in Resources */,
+				7EA5B2D7222EFFFD001947B2 /* FileUpload_Start.lua in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

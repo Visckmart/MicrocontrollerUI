@@ -197,6 +197,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
                 print("cancelled")
             }
         }
+//        serial.uploadFile(URL(fileURLWithPath: "abcd"))
     }
     // MARK: - Commands Area
     
