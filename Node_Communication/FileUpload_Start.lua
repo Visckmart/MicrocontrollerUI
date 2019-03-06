@@ -8,4 +8,5 @@ uart.on('data', <filesize>, function (d)
     table.insert(t, {d, #d});
     file.write(d:match('^%s*(.*)%s*$'));
     uart.on('data')
+    file.close()
 end, 0)

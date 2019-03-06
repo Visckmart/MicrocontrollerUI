@@ -259,42 +259,56 @@
     readingFiles = TRUE;
     [self writeString:@"for name in pairs(file.list()) do print(name) end print('\\r\\r')"];
 }
+
 typedef NSString Program;
 - (Program *) prepareProgram: (NSString *)programName withData:(NSDictionary *) dataDict {
     NSString * uploadProgramPath = [[NSBundle mainBundle] pathForResource:programName ofType:@"lua"];
     
-    NSRegularExpression* regex = [[NSRegularExpression alloc] initWithPattern: @"<([a-z]+)>" options: NSRegularExpressionCaseInsensitive error: nil];
     NSString * content = [NSString stringWithContentsOfFile: uploadProgramPath
                                                    encoding: NSUTF8StringEncoding
-                                                      error: NULL];
+                                                      error: nil];
+    NSRegularExpression* regex = [NSRegularExpression
+                                  regularExpressionWithPattern: @"<([A-Za-z]+)>"
+                                  options:0 error: nil];
+    
     NSTextCheckingResult * matchRange = [regex firstMatchInString:content options:0 range:NSMakeRange(0, content.length)];
     while (matchRange != nil) {
-        NSString* keySubstring = [content substringWithRange:[matchRange rangeAtIndex:1]];
+        NSRange firstCapture = [matchRange rangeAtIndex:1];
+        NSString * keySubstring = [content substringWithRange:firstCapture];
+        NSString * value = [dataDict objectForKey:keySubstring];
+        if (value == nil) {
+            NSLog(@"Error at program preparation.");
+            return NULL;
+        }
         content = [content stringByReplacingCharactersInRange: matchRange.range
                                                    withString: dataDict[keySubstring]];
+        
         matchRange = [regex firstMatchInString:content options:0 range:NSMakeRange(0, content.length)];
-        //        NSLog(@"Extracted: %@",content);
     }
     return [content stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
 }
 
 - (void) uploadFile:(NSURL *)filePath {
     NSData * file = [NSData dataWithContentsOfURL:filePath];
-    NSDictionary * dict = [[NSDictionary alloc]
-                           initWithObjects: @[filePath.lastPathComponent, @([file length] + 2).stringValue]
-                           forKeys: @[@"filename", @"filesize"]];
-    Program * startFileUpload = [self prepareProgram:@"FileUpload_Start" withData:dict];
-    NSLog(@"----------\n%@\n----------", startFileUpload);
-//    NSString * fileName = [filePath lastPathComponent];
-//    NSLog(@"%@", fileName);
-//    NSData * d = [@"print('Uploaded new file')" dataUsingEncoding:NSUTF8StringEncoding];
-//    NSString * commandBegin = [NSString stringWithFormat:@"file.open('%@', 'w+'); x = ''; i = 0; t = {}; uart.on('data', 24, function (d) x = d; i = i + #d; table.insert(t, {d, #d}); file.write(d:sub(2)); uart.on('data') end, 0)", @"uploaded.lua"];
-    NSString * closeFileCommand = @"file.close()";
+    if (file == nil) {
+        NSLog(@"Upload aborted because the file couldn't be loaded.");
+        return;
+    }
+    NSNumber * dataSize = @([file length] + 2);
+    
+    NSDictionary * dict = [NSDictionary dictionaryWithObjects: @[filePath.lastPathComponent, dataSize.stringValue] forKeys: @[@"filename", @"filesize"]];
+    
+    Program * prepareFileUpload = [self prepareProgram:@"FileUpload_Start" withData:dict];
+    NSLog(@"\n--File--\n%@\n--------", prepareFileUpload);
+    if (prepareFileUpload == NULL) {
+        NSLog(@"Upload aborted because it couldn't be prepared.");
+        return;
+    }
+    NSString * fileContent = [[NSString alloc] initWithData: file encoding: NSUTF8StringEncoding];
+    
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self writeString: startFileUpload];
-        [self writeString: [[NSString alloc] initWithData: file encoding: NSUTF8StringEncoding]];
-//        [self writeString: [[NSString alloc] initWithData:d encoding:NSUTF8StringEncoding]];
-        [self writeString: closeFileCommand];
+        [self writeString: prepareFileUpload];
+        [self writeString: fileContent];
     });
 }
 
