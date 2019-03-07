@@ -22,6 +22,10 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         return sideBarWrapper.documentView as! NSOutlineView
     }
     
+    @IBOutlet weak var uploadButton: NSButton!
+    @IBOutlet weak var refreshUploadButton: NSButton!
+    @IBOutlet weak var refreshUploadText: NSTextField!
+    
     // MARK: Command elements
     @IBOutlet weak var commandTextfield: NSTextField!
     @IBOutlet weak var sendButton: NSButton!
@@ -85,6 +89,21 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
             sideBar.insertItems(at: IndexSet(integersIn: 1...elements.count), inParent: nil, withAnimation: NSTableView.AnimationOptions.effectFade)
         }
 //        sideBar.insertItems(at: IndexSet(integer: 2), inParent: nil, withAnimation: NSTableView.AnimationOptions.effectFade)
+    }
+    
+    var lastUploadedFile: (url: URL, lastModified: Date)? = nil
+    
+    func checkFileRefresh() {
+        /* TODO: Poderia melhorar se guardasse o arquivo original
+         e comparasse com o atual usando Data.isEqual(to other: Data). */
+        guard let lastUploadedFile = lastUploadedFile else { return }
+//        print("Checking \(lastUploadedFile.path)");
+        let currentModifDate = try? getLastModifiedDate(ofFile: lastUploadedFile.url.path)
+        print(lastUploadedFile.lastModified, currentModifDate as Any)
+        if lastUploadedFile.lastModified < currentModifDate!! {
+            refreshUploadButton.isEnabled = true
+            self.refreshUploadText.stringValue = "Reupload \"\(lastUploadedFile.url.lastPathComponent)\" with it's latest changes."
+        }
     }
     
     @objc func doubleClickOnResultRow()
@@ -190,8 +209,14 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
             if response == .OK {
                 print("Panel URL: \(panel.url)")
                 if let fileURL = panel.url {
-                    self.serial.write("print('Would upload file \(fileURL.lastPathComponent)')")
+//                    self.serial.write("print('Would upload file \(fileURL.lastPathComponent)')")
                     self.serial.uploadFile(fileURL)
+                    
+                    // TODO: Improve with Swift 5
+                    if let lastModif = try? getLastModifiedDate(ofFile: fileURL.path) {
+                        self.lastUploadedFile = (url: fileURL, lastModified: lastModif!)
+                        self.refreshUploadText.stringValue = "This button allows you to reupload the most recent file if changes were made."
+                    }
                 }
             } else if response == NSApplication.ModalResponse.cancel {
                 print("cancelled")
@@ -199,6 +224,20 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         }
 //        serial.uploadFile(URL(fileURLWithPath: "abcd"))
     }
+    
+    @IBAction func refreshLastUpload(_ sender: Any) {
+        guard let lastUploadedFile = lastUploadedFile else {
+            print("Não deveria poder dar refresh")
+            return
+        }
+//        self.serial.write("print('Will reupload file \(lastUploadedFile.url)')")
+        self.serial.uploadFile(lastUploadedFile.url)
+        if let lastModif = try? getLastModifiedDate(ofFile: lastUploadedFile.url.path) {
+            self.lastUploadedFile!.lastModified = lastModif!
+        }
+        refreshUploadButton.isEnabled = false
+    }
+    
     // MARK: - Commands Area
     
     @IBAction func sendButtonClicked(_ sender: Any) {

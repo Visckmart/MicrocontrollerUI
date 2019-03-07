@@ -21,5 +21,17 @@ func tryCleaningNames(deviceNames: [String]) -> [String] {
     return newNames
 }
 
+typealias FilePath = String
+
+func getLastModifiedDate(ofFile file: FilePath) throws -> Date? {
+    do {
+        let fileAttributes = try FileManager.default.attributesOfItem(atPath: file)
+        return fileAttributes[.modificationDate] as? Date
+    } catch {
+        print(error)
+        throw error
+    }
+}
+
 let moveUpSelector = #selector(NSStandardKeyBindingResponding.moveUp(_:))
 let moveDownSelector = #selector(NSStandardKeyBindingResponding.moveDown(_:))

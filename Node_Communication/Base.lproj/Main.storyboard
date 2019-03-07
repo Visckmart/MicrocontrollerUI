@@ -706,24 +706,24 @@
             <objects>
                 <viewController id="XfG-lQ-9wD" customClass="ViewController" customModule="Node_Communication" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" wantsLayer="YES" id="m2S-Jp-Qdl">
-                        <rect key="frame" x="0.0" y="0.0" width="705" height="799"/>
+                        <rect key="frame" x="0.0" y="0.0" width="753" height="1042"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <stackView distribution="fill" orientation="horizontal" alignment="centerY" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kBx-mz-iH0">
-                                <rect key="frame" x="24" y="54" width="657" height="613"/>
+                                <rect key="frame" x="24" y="54" width="705" height="856"/>
                                 <subviews>
                                     <scrollView horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="exm-bU-uP8">
-                                        <rect key="frame" x="0.0" y="0.0" width="469" height="613"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="517" height="856"/>
                                         <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="uWC-ns-1dY">
-                                            <rect key="frame" x="1" y="1" width="467" height="611"/>
+                                            <rect key="frame" x="1" y="1" width="515" height="854"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <textView importsGraphics="NO" richText="NO" verticallyResizable="YES" smartInsertDelete="YES" id="PfZ-hf-m7e">
-                                                    <rect key="frame" x="0.0" y="0.0" width="2603" height="611"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="2651" height="854"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                    <size key="minSize" width="467" height="611"/>
+                                                    <size key="minSize" width="515" height="854"/>
                                                     <size key="maxSize" width="2676" height="10000000"/>
                                                     <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                                 </textView>
@@ -733,21 +733,21 @@
                                             <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="44" id="JWz-hA-CE8"/>
                                         </constraints>
                                         <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="JvX-ib-eNf">
-                                            <rect key="frame" x="452" y="1" width="16" height="611"/>
+                                            <rect key="frame" x="500" y="1" width="16" height="854"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                     </scrollView>
                                     <stackView distribution="fill" orientation="vertical" alignment="centerX" horizontalStackHuggingPriority="250.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2T7-U6-bsY">
-                                        <rect key="frame" x="477" y="0.0" width="180" height="613"/>
+                                        <rect key="frame" x="525" y="0.0" width="180" height="856"/>
                                         <subviews>
                                             <scrollView autohidesScrollers="YES" horizontalLineScroll="17" horizontalPageScroll="10" verticalLineScroll="17" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BZe-w9-GYz">
-                                                <rect key="frame" x="0.0" y="29" width="180" height="584"/>
+                                                <rect key="frame" x="0.0" y="112" width="180" height="744"/>
                                                 <clipView key="contentView" drawsBackground="NO" id="v7Z-va-KQZ">
-                                                    <rect key="frame" x="1" y="1" width="178" height="582"/>
+                                                    <rect key="frame" x="1" y="1" width="178" height="742"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" multipleSelection="NO" autosaveColumns="NO" typeSelect="NO" rowSizeStyle="automatic" viewBased="YES" outlineTableColumn="ay7-1S-Tf9" id="4C4-6c-gvH">
-                                                            <rect key="frame" x="0.0" y="0.0" width="178" height="582"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="178" height="742"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                             <size key="intercellSpacing" width="3" height="0.0"/>
                                                             <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -859,7 +859,7 @@
                                                     <constraint firstAttribute="width" constant="180" id="T1G-9N-lsB"/>
                                                 </constraints>
                                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="Yky-4b-S7L">
-                                                    <rect key="frame" x="1" y="567" width="0.0" height="16"/>
+                                                    <rect key="frame" x="1" y="727" width="148" height="16"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </scroller>
                                                 <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="YHs-hm-iG0">
@@ -867,19 +867,66 @@
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </scroller>
                                             </scrollView>
-                                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="jZ4-Wj-x2h">
-                                                <rect key="frame" x="-6" y="-7" width="192" height="32"/>
-                                                <buttonCell key="cell" type="push" title="Upload file" bezelStyle="rounded" image="NSShareTemplate" imagePosition="leading" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="tYE-Ep-cKd">
-                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                    <font key="font" metaFont="system"/>
-                                                    <string key="keyEquivalent">u</string>
-                                                    <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                                                </buttonCell>
-                                                <connections>
-                                                    <action selector="uploadButtonClicked:" target="XfG-lQ-9wD" id="X9c-WQ-kzk"/>
-                                                </connections>
-                                            </button>
+                                            <stackView orientation="vertical" alignment="centerX" spacing="4" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0gT-eD-Dej">
+                                                <rect key="frame" x="0.0" y="0.0" width="180" height="104"/>
+                                                <beginningViews>
+                                                    <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jZ4-Wj-x2h">
+                                                        <rect key="frame" x="29" y="76" width="123" height="32"/>
+                                                        <buttonCell key="cell" type="push" title="Upload file" bezelStyle="rounded" image="NSShareTemplate" imagePosition="leading" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="tYE-Ep-cKd">
+                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                            <font key="font" metaFont="system"/>
+                                                            <string key="keyEquivalent">u</string>
+                                                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                                        </buttonCell>
+                                                        <connections>
+                                                            <action selector="uploadButtonClicked:" target="XfG-lQ-9wD" id="X9c-WQ-kzk"/>
+                                                        </connections>
+                                                    </button>
+                                                </beginningViews>
+                                                <endViews>
+                                                    <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xfp-Ts-qYU">
+                                                        <rect key="frame" x="26" y="39" width="129" height="32"/>
+                                                        <buttonCell key="cell" type="push" title="Refresh file" bezelStyle="rounded" image="NSRefreshFreestandingTemplate" imagePosition="leading" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="spe-O9-MEk">
+                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                            <font key="font" metaFont="system"/>
+                                                            <string key="keyEquivalent">r</string>
+                                                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                                                        </buttonCell>
+                                                        <connections>
+                                                            <action selector="refreshLastUpload:" target="XfG-lQ-9wD" id="gqT-g9-uD2"/>
+                                                        </connections>
+                                                    </button>
+                                                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KsU-Td-VkI">
+                                                        <rect key="frame" x="-2" y="0.0" width="184" height="42"/>
+                                                        <textFieldCell key="cell" selectable="YES" enabled="NO" alignment="center" title="This button allows you to reupload the most recent file if changes were made." id="4tx-XS-iXE">
+                                                            <font key="font" metaFont="toolTip"/>
+                                                            <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                        </textFieldCell>
+                                                    </textField>
+                                                </endViews>
+                                                <constraints>
+                                                    <constraint firstItem="jZ4-Wj-x2h" firstAttribute="width" secondItem="0gT-eD-Dej" secondAttribute="width" multiplier="0.7" id="dQG-rx-7sf"/>
+                                                    <constraint firstItem="xfp-Ts-qYU" firstAttribute="width" secondItem="0gT-eD-Dej" secondAttribute="width" multiplier="0.7" id="jbg-Vg-KuD"/>
+                                                    <constraint firstItem="xfp-Ts-qYU" firstAttribute="top" relation="greaterThanOrEqual" secondItem="jZ4-Wj-x2h" secondAttribute="bottom" constant="16" id="kzs-JM-2Du"/>
+                                                    <constraint firstItem="KsU-Td-VkI" firstAttribute="width" secondItem="0gT-eD-Dej" secondAttribute="width" multiplier="0.9" id="xRA-Ol-J4d"/>
+                                                </constraints>
+                                                <visibilityPriorities>
+                                                    <integer value="1000"/>
+                                                    <integer value="1000"/>
+                                                    <integer value="1000"/>
+                                                </visibilityPriorities>
+                                                <customSpacing>
+                                                    <real value="3.4028234663852886e+38"/>
+                                                    <real value="3.4028234663852886e+38"/>
+                                                    <real value="3.4028234663852886e+38"/>
+                                                </customSpacing>
+                                            </stackView>
                                         </subviews>
+                                        <constraints>
+                                            <constraint firstItem="0gT-eD-Dej" firstAttribute="width" secondItem="BZe-w9-GYz" secondAttribute="width" id="BFA-F3-mjP"/>
+                                            <constraint firstItem="BZe-w9-GYz" firstAttribute="width" secondItem="2T7-U6-bsY" secondAttribute="width" id="zZG-a3-Zw8"/>
+                                        </constraints>
                                         <visibilityPriorities>
                                             <integer value="1000"/>
                                             <integer value="1000"/>
@@ -890,6 +937,14 @@
                                         </customSpacing>
                                     </stackView>
                                 </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="2T7-U6-bsY" secondAttribute="bottom" id="5g9-zO-S5C"/>
+                                    <constraint firstItem="exm-bU-uP8" firstAttribute="top" secondItem="kBx-mz-iH0" secondAttribute="top" id="VeD-kS-9uy"/>
+                                    <constraint firstItem="2T7-U6-bsY" firstAttribute="top" secondItem="kBx-mz-iH0" secondAttribute="top" id="jvG-LW-mkE"/>
+                                    <constraint firstItem="exm-bU-uP8" firstAttribute="leading" secondItem="kBx-mz-iH0" secondAttribute="leading" id="p6Q-4C-saj"/>
+                                    <constraint firstAttribute="trailing" secondItem="2T7-U6-bsY" secondAttribute="trailing" id="rY5-XP-caL"/>
+                                    <constraint firstAttribute="bottom" secondItem="exm-bU-uP8" secondAttribute="bottom" id="slo-7C-4sk"/>
+                                </constraints>
                                 <visibilityPriorities>
                                     <integer value="1000"/>
                                     <integer value="1000"/>
@@ -900,7 +955,7 @@
                                 </customSpacing>
                             </stackView>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vbs-xv-kUa">
-                                <rect key="frame" x="24" y="24" width="582" height="22"/>
+                                <rect key="frame" x="24" y="24" width="630" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" placeholderString="command" drawsBackground="YES" id="13b-hN-NQG">
                                     <font key="font" usesAppearanceFont="YES"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -908,7 +963,7 @@
                                 </textFieldCell>
                             </textField>
                             <popUpButton horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="fgL-oL-Elo">
-                                <rect key="frame" x="65" y="724" width="390" height="25"/>
+                                <rect key="frame" x="65" y="967" width="438" height="25"/>
                                 <popUpButtonCell key="cell" type="push" title="wchusbserial1420" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" enabled="NO" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="6tb-3U-KP8" id="umK-fu-Lpy">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="menu"/>
@@ -929,7 +984,7 @@ CQ
                                 </connections>
                             </popUpButton>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="E08-Yp-GKk">
-                                <rect key="frame" x="614" y="720" width="73" height="32"/>
+                                <rect key="frame" x="662" y="963" width="73" height="32"/>
                                 <buttonCell key="cell" type="push" title="Open" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Jkj-ug-eFl">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -939,7 +994,7 @@ CQ
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="p6y-di-Qz8">
-                                <rect key="frame" x="18" y="720" width="47" height="32"/>
+                                <rect key="frame" x="18" y="963" width="47" height="32"/>
                                 <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSRefreshTemplate" imagePosition="overlaps" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="R82-Nd-HdW">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -949,10 +1004,10 @@ CQ
                                 </connections>
                             </button>
                             <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="cKq-0U-ag9">
-                                <rect key="frame" x="24" y="708" width="657" height="5"/>
+                                <rect key="frame" x="24" y="951" width="705" height="5"/>
                             </box>
                             <button horizontalHuggingPriority="800" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="tkd-4U-0C7">
-                                <rect key="frame" x="616" y="17" width="71" height="32"/>
+                                <rect key="frame" x="664" y="17" width="71" height="32"/>
                                 <buttonCell key="cell" type="push" title="Send" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="jaW-kX-gBu">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -962,7 +1017,7 @@ CQ
                                 </connections>
                             </button>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="bF9-Oh-wKs">
-                                <rect key="frame" x="22" y="756" width="112" height="19"/>
+                                <rect key="frame" x="22" y="999" width="112" height="19"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Communication" id="e4W-o8-GYi">
                                     <font key="font" size="15" name=".AppleSystemUIFont"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -970,7 +1025,7 @@ CQ
                                 </textFieldCell>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hLP-Wh-PQP">
-                                <rect key="frame" x="22" y="675" width="60" height="19"/>
+                                <rect key="frame" x="22" y="918" width="60" height="19"/>
                                 <textFieldCell key="cell" lineBreakMode="clipping" title="Console" id="9ID-pe-x2S">
                                     <font key="font" size="15" name=".AppleSystemUIFont"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -978,7 +1033,7 @@ CQ
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="3v1-lJ-fRA">
-                                <rect key="frame" x="458" y="729" width="156" height="18"/>
+                                <rect key="frame" x="506" y="972" width="156" height="18"/>
                                 <buttonCell key="cell" type="check" title="Restart on connection" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="fJK-oK-wZn">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -986,7 +1041,6 @@ CQ
                             </button>
                         </subviews>
                         <constraints>
-                            <constraint firstItem="exm-bU-uP8" firstAttribute="top" secondItem="hLP-Wh-PQP" secondAttribute="bottom" constant="8" id="1FK-DB-ldZ"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="hLP-Wh-PQP" secondAttribute="trailing" constant="24" id="3zx-jT-few"/>
                             <constraint firstItem="hLP-Wh-PQP" firstAttribute="top" secondItem="cKq-0U-ag9" secondAttribute="bottom" constant="16" id="5jb-QZ-JKM"/>
                             <constraint firstItem="bF9-Oh-wKs" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="24" id="7DW-KV-yiL"/>
@@ -1022,15 +1076,18 @@ CQ
                         <outlet property="connectionsList" destination="fgL-oL-Elo" id="PIP-30-WCe"/>
                         <outlet property="consoleTextView" destination="exm-bU-uP8" id="LwC-Sb-kna"/>
                         <outlet property="refreshButton" destination="p6y-di-Qz8" id="lBY-F4-hE7"/>
+                        <outlet property="refreshUploadButton" destination="xfp-Ts-qYU" id="LFg-6x-Rf6"/>
+                        <outlet property="refreshUploadText" destination="KsU-Td-VkI" id="Kml-rw-g2U"/>
                         <outlet property="restartCheckbox" destination="3v1-lJ-fRA" id="2rJ-Yo-hYn"/>
                         <outlet property="sendButton" destination="tkd-4U-0C7" id="n12-SW-6JB"/>
                         <outlet property="sideBarWrapper" destination="BZe-w9-GYz" id="6Ie-vU-4nl"/>
+                        <outlet property="uploadButton" destination="jZ4-Wj-x2h" id="GbC-PO-O6l"/>
                     </connections>
                 </viewController>
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <customObject id="nEP-ug-Ige" customClass="SidebarOutlineView" customModule="Node_Communication" customModuleProvider="target"/>
             </objects>
-            <point key="canvasLocation" x="11" y="869.5"/>
+            <point key="canvasLocation" x="74.5" y="1088"/>
         </scene>
     </scenes>
     <resources>

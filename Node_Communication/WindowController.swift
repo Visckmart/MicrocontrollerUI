@@ -25,5 +25,10 @@ class WindowController: NSWindowController, NSWindowDelegate {
 //            print("big")
 //        }
     }
+    
+    func windowDidBecomeMain(_ notification: Notification) {
+        print(#function)
+        (contentViewController as! ViewController).checkFileRefresh()
+    }
 
 }
