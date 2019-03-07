@@ -45,14 +45,14 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         get {
             return UserDefaults.standard.string(forKey: "favorite")
         }
-        set {
-            UserDefaults.standard.set(favoriteDevice, forKey: "favorite")
+        set (newFavorite) {
+            UserDefaults.standard.set(newFavorite, forKey: "favorite")
         }
     }
     
     var files: [String] = [] {
         didSet {
-            print("New files \(files)")
+//            print("New files \(files)")
             repopulateSideBar(with: files)
         }
     }

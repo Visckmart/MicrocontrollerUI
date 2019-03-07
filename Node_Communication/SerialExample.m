@@ -139,6 +139,23 @@ NSString *const EndOfTextChar = @"";
 	return errorMessage;
 }
 
+- (NSArray *) filterFilenames:(NSArray *) stringArray {
+    if (stringArray.count == 0) {
+        return [NSArray array];
+    }
+    NSMutableArray * filteredArray = [NSMutableArray array];
+    NSRegularExpression * regex = [NSRegularExpression regularExpressionWithPattern:@"^\\s*(\\S+)\\s*$" options:0 error:nil];
+    for (NSString * name in stringArray) {
+        NSRange nameRange = NSMakeRange(0, [name length]);
+        NSTextCheckingResult * firstMatch = [regex firstMatchInString:name options:0 range:nameRange];
+        if (firstMatch != NULL) {
+            NSString * trimmedName = [name substringWithRange: [firstMatch rangeAtIndex:1]];
+            [filteredArray addObject: trimmedName];
+        }
+    }
+    return [filteredArray copy];
+}
+
 // This selector/function will be called as another thread...
 //  this thread will read from the serial port and exits when the port is closed
 - (void)incomingTextUpdateThread: (NSThread *) parentThread {
@@ -149,9 +166,6 @@ NSString *const EndOfTextChar = @"";
 	char byte_buffer[BUFFER_SIZE]; // buffer for holding incoming data
 	long numBytes=0; // number of bytes read during read
 	NSString *text; // incoming text from the serial port
-    NSString *filesText = @"";
-    NSMutableArray * f = [NSMutableArray array];
-    int x = 0;
     NSMutableString * acc = [NSMutableString string];
     
     BOOL preparingToReadFileList = NO;
@@ -174,29 +188,18 @@ NSString *const EndOfTextChar = @"";
             if (!readingFiles) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self.interface logWithString:text];
-//                    if (self->commandQueue.count > 0) {
-//                        [self writeString:self->commandQueue[0]];
-//                        [self->commandQueue removeObjectAtIndex:0];
-//                    }
-//                    if (!self->readingFiles) {
-//                        NSLog(@"2not reading");
-//                    } else {
-//                        NSLog(@"2reading files");
-//                    }
                 });
             } else {
-                NSLog(@"reading files\n-\n%@\n-", text);
+                NSLog(@"Reading files");
+//                NSLog(@"-\n%@\n-", text);
                 NSRange start = [text rangeOfString:StartOfTextChar];
                 NSRange end = [text rangeOfString:EndOfTextChar];
                 if (readingFileList == NO) {
                     if (preparingToReadFileList == NO && start.location != NSNotFound) {
-                            preparingToReadFileList = YES;
-                    } else if (preparingToReadFileList == YES) {
-                        if (end.location != NSNotFound) {
-                            preparingToReadFileList = NO;
-                            readingFileList = YES;
-//                            [acc appendString: [text substringFromIndex:end.location]];
-                        }
+                        preparingToReadFileList = YES;
+                    } else if (preparingToReadFileList && end.location != NSNotFound) {
+                        preparingToReadFileList = NO;
+                        readingFileList = YES;
                     }
                 } else {
                     if (start.location != NSNotFound && end.location != NSNotFound) {
@@ -207,82 +210,18 @@ NSString *const EndOfTextChar = @"";
                     } else if (end.location != NSNotFound) {
                         [acc appendString: [text substringToIndex:end.location]];
                         readingFileList = NO;
-                        NSArray * temp = [acc componentsSeparatedByString:@"\n"];
-                        for (NSString * t in temp) {
-                            NSRegularExpression* regex = [NSRegularExpression regularExpressionWithPattern:@"^\\s*(\\S+)\\s*$" options:0 error:nil];
-                            NSTextCheckingResult * firstMatch = [regex firstMatchInString:t options:0 range:NSMakeRange(0, [t length])];
-                            if (firstMatch != NULL) {
-                                [f addObject: [t substringWithRange: [firstMatch rangeAtIndex:1]]];
-                            }
-                        }
+                        NSArray * fileNames = [self filterFilenames:[acc componentsSeparatedByString:@"\n"]];
                         dispatch_async(dispatch_get_main_queue(), ^{
-//                            NSString * fromEnd = [text substringFromIndex:end.location];
-//                            [self.interface logWithString:[fromEnd stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
-                            NSLog(@"f is %@", [f copy]);
-                            self.interface.files = [f copy];
-                            [f removeAllObjects];
+                            NSLog(@"f is %@", fileNames);
+                            self.interface.files = fileNames;
                             [acc setString:@""];
                         });
+                        readingFiles = NO;
                     } else {
                         [acc appendString: text];
                     }
                 }
-//                if ([text rangeOfString:EndOfTextChar].location != NSNotFound) {
-//                    NSLog(@"END OF TEXT FOUND");
-//                    x += 1;
-//                }
-//                if ([text rangeOfString:StartOfTextChar].location != NSNotFound) {
-//                    NSLog(@"START OF TEXT FOUND");
-//                    x += 1;
-//                }
-//                if (x >= 3 || [text rangeOfString:EndOfTextChar].location != NSNotFound) {
-//                    NSRange start = [text rangeOfString:StartOfTextChar];
-//                    NSRange end = [text rangeOfString:EndOfTextChar];
-//                    if (start.location != NSNotFound) {
-//                        [acc appendString: [text substringFromIndex:start.location]];
-//                    } else if (end.location != NSNotFound) {
-//                        [acc appendString: [text substringToIndex:end.location]];
-//                    } else {
-//                        [acc appendString:text];
-//                    }
-//                }
-//                if (x == 4) {
-//                    NSLog(@"");
-//                }
-//                if ([text rangeOfString:@"\r\n\r\n"].location != NSNotFound) {
-//                    NSArray * temp = [text componentsSeparatedByString:@"\n"];
-//
-//                    for (NSString * t in temp) {
-//                        NSRegularExpression* regex = [[NSRegularExpression alloc] initWithPattern:@"[a-z]" options:NSRegularExpressionCaseInsensitive error:nil];
-//                        if ([regex numberOfMatchesInString:t options:0 range:NSMakeRange(0, [t length])] > 0) {
-//                            [f addObject: [t stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]];
-//                        }
-//                    }
-////                    text = [text substringFromIndex:[text rangeOfString:@"\r\r"].location];
-//                    readingFiles = FALSE;
-//                    dispatch_async(dispatch_get_main_queue(), ^{
-//                        [self.interface logWithString:text];
-//                        NSLog(@"f is %@", [f copy]);
-//                        self.interface.files = [f copy];
-//                        [f removeAllObjects];
-//                    });
-////                    NSLog(@"Files %@", filesText);
-//                } else if ([text rangeOfString:@"\n"].location != NSNotFound) {
-//                    NSArray * temp = [text componentsSeparatedByString:@"\n"];
-//
-//                    for (NSString * t in temp) {
-//                        NSRegularExpression* regex = [[NSRegularExpression alloc] initWithPattern:@"[a-z]" options:NSRegularExpressionCaseInsensitive error:nil];
-//                        if ([regex numberOfMatchesInString:t options:0 range:NSMakeRange(0, [t length])] > 0) {
-//                            [f addObject: [t stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]]];
-//                        }
-//                    }
-////                    filesText = [filesText stringByAppendingString:[text]];
-////                    NSLog(@"Files %@", f);
-//                }
             }
-//            [self performSelectorOnMainThread:@selector(appendToIncomingText:)
-//                           withObject:text
-//                        waitUntilDone:YES];
 		} else {
 			break; // Stop the thread if there is an error
 		}

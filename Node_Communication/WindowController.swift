@@ -17,17 +17,11 @@ class WindowController: NSWindowController, NSWindowDelegate {
     }
     
     func windowDidResize(_ notification: Notification) {
-//        print(window!.frame.width)
-//        if window!.frame.width < CGFloat(500) {
-//            print("small")
             (contentViewController as! ViewController).adaptLayout()
-//        } else {
-//            print("big")
-//        }
     }
     
     func windowDidBecomeMain(_ notification: Notification) {
-        print(#function)
+//        print(#function)
         (contentViewController as! ViewController).checkFileRefresh()
     }
 
