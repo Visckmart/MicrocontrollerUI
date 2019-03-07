@@ -13,6 +13,3 @@ import Foundation
     func updateConnectionStatus(connected: Bool)
     var files: [String] { get set }
 }
-
-//protocol ListsFiles {
-//}

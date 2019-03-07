@@ -74,21 +74,19 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         sendButton.keyEquivalent = "\r"
         restartCheckbox.keyEquivalent = "r"
         sideBar.doubleAction = #selector(ViewController.doubleClickOnResultRow)
-        
-//        (sideBar.dataSource as! SidebarOutlineView).reloadData(forRowIndexes: [sideBar.row(forItem: nil)], columnIndexes: [sideBar.column(at: .zero)])
-//        print()
-        repopulateSideBar(with: ["a"])
-//        (sideBar.dataSource as! SidebarOutlineView).reloadData()
     }
     
     // TODO: Passar essa função para a classe da side bar
     private func repopulateSideBar(with elements: [String]) {
         (sideBar.dataSource as! SidebarOutlineView).nomes = elements
-        sideBar.removeItems(at: IndexSet(integersIn: 1..<sideBar.numberOfRows), inParent: nil, withAnimation: .effectFade)
+        let indexPathsToClear = IndexSet(integersIn: 1..<sideBar.numberOfRows)
+        sideBar.removeItems(at: indexPathsToClear, inParent: nil,
+                            withAnimation: .effectFade)
         if elements.count >= 1 {
-            sideBar.insertItems(at: IndexSet(integersIn: 1...elements.count), inParent: nil, withAnimation: NSTableView.AnimationOptions.effectFade)
+            let indexPathsToInsert = IndexSet(integersIn: 1...elements.count)
+            sideBar.insertItems(at: indexPathsToInsert, inParent: nil,
+                                withAnimation: .effectFade)
         }
-//        sideBar.insertItems(at: IndexSet(integer: 2), inParent: nil, withAnimation: NSTableView.AnimationOptions.effectFade)
     }
     
     var lastUploadedFile: (url: URL, lastModified: Date)? = nil
@@ -108,8 +106,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     
     @objc func doubleClickOnResultRow()
     {
-        print("doubleClickOnResultRow \((sideBarWrapper.documentView as? NSOutlineView)?.clickedRow)")
-        (sideBarWrapper.documentView as? NSOutlineView)?.deselectRow((sideBarWrapper.documentView as? NSOutlineView)!.clickedRow)
+//        print("doubleClickOnResultRow \((sideBarWrapper.documentView as? NSOutlineView)?.clickedRow)")
         if sideBar.clickedRow == 0 {
             serial.readFiles()
         } else {
@@ -131,10 +128,9 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     
     @IBAction func refreshList(_ sender: NSButton? = nil) {
         connectionsList.removeAllItems()
-        if var connectedDevices = serial.refreshSerialList() as? [String] {
+        if let connectedDevices = serial.refreshSerialList() as? [String] {
             self.rawDeviceNames = connectedDevices
-            connectedDevices = tryCleaningNames(deviceNames: connectedDevices)
-            connectionsList.addItems(withTitles: connectedDevices)
+            connectionsList.addItems(withTitles: tryCleaningNames(deviceNames: connectedDevices))
             connectionsList.isEnabled = true
             if let favoriteDevice = favoriteDevice,
                 let positionOfFav = rawDeviceNames.firstIndex(of: favoriteDevice) {
@@ -162,6 +158,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
             let item = rawDeviceNames[indexOfSelectedItem]
             print(serial.openSerialPort(item, baud: speed_t(115200)))
             if restartCheckbox.state == .on { serial.restart() }
+            else { canWrite = true }
             serial.performSelector(inBackground: #selector(serial.incomingTextUpdate(_:)), with: Thread.main)
             
             print("Favorite: \(favoriteDevice ?? "no favorite")")
@@ -170,10 +167,6 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
             print("Would try to disconnect.")
 //            serial.closeSerialPort()
         }
-    }
-    
-    @IBAction func performC(_ sender: Any) {
-        print("clicked")
     }
     
     // MARK: Writes protocol
@@ -207,7 +200,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         let panel = NSOpenPanel()
         panel.begin { (response) in
             if response == .OK {
-                print("Panel URL: \(panel.url)")
+                print("Panel URL: \(String(describing: panel.url))")
                 if let fileURL = panel.url {
 //                    self.serial.write("print('Would upload file \(fileURL.lastPathComponent)')")
                     self.serial.uploadFile(fileURL)

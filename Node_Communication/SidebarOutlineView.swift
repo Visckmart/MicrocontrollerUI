@@ -11,10 +11,11 @@ import Cocoa
 class SidebarOutlineView: NSOutlineView, NSOutlineViewDataSource, NSOutlineViewDelegate {
 
     var nomes: [String] = []
+    let dataCellID = NSUserInterfaceItemIdentifier(rawValue: "DataCell")
+    let refreshCellID = NSUserInterfaceItemIdentifier(rawValue: "RefreshCell")
     
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
         if item == nil {
-            print("first item")
             return nomes.count + 1
         }
         return 0
@@ -40,20 +41,25 @@ class SidebarOutlineView: NSOutlineView, NSOutlineViewDataSource, NSOutlineViewD
     }
     
     func outlineView(_ outlineView: NSOutlineView, objectValueFor tableColumn: NSTableColumn?, byItem item: Any?) -> Any? {
-        print(item)
         return item
     }
     
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
-        var view: NSTableCellView?
-        view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "DataCell"), owner: self) as? NSTableCellView
-        if (item as! String) == "Refresh" {
-            view = outlineView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "RefreshCell"), owner: self) as? NSTableCellView
+        guard let item = item as? String else {
+            fatalError("Source view item isn't a label.")
         }
-        view?.frame.size.width = outlineView.frame.width
+        let cellID: NSUserInterfaceItemIdentifier
+        
+        if item == "Refresh" {
+            cellID = refreshCellID
+        } else {
+            cellID = dataCellID
+        }
+        
+        let view = outlineView.makeView(withIdentifier: cellID, owner: self) as? NSTableCellView
+        
         if let textField = view?.textField {
-            //3
-            textField.stringValue = item as! String
+            textField.stringValue = item
             textField.sizeToFit()
         }
         return view
