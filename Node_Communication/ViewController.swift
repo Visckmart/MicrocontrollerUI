@@ -187,6 +187,11 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         }
     }
     
+    func log(attributedString: NSAttributedString) {
+        consoleTextStorage.append(attributedString)
+        (consoleTextView.documentView as! NSTextView).scrollToEndOfDocument(self)
+    }
+    
     func updateConnectionStatus(connected: Bool) {
         self.isConnected = connected
         if connected {

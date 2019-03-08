@@ -29,6 +29,7 @@
     bool readingFiles;
     NSString * filesOutput;
     NSMutableArray * commandQueue;
+    NSString * commandRunning;
 }
 @property (weak) id <Writes> interface;
 - (void) prepare;

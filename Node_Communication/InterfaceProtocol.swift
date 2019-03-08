@@ -10,6 +10,7 @@ import Foundation
 
 @objc protocol Writes {
     func log(string: String)
+    func log(attributedString: NSAttributedString)
     func updateConnectionStatus(connected: Bool)
     var files: [String] { get set }
 }

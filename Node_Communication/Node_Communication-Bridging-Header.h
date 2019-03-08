@@ -3,3 +3,4 @@
 //
 
 #import "SerialExample.h"
+#import "HelperFunctions-ObjC.m"
