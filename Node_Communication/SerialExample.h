@@ -16,6 +16,11 @@
 #include <sys/ioctl.h>
 
 @protocol Writes;
+typedef NS_ENUM(NSInteger, CommandType) {
+    none = 0,
+    readingFiles,
+    common
+};
 @interface SerialExample : NSObject {
 	IBOutlet NSPopUpButton *serialListPullDown;
 	IBOutlet NSTextView *serialOutputArea;
@@ -26,10 +31,13 @@
 	bool readThreadRunning;
 	NSTextStorage *storage;
     NSThread * bg;
-    bool readingFiles;
+//    bool readingFiles;
     NSString * filesOutput;
     NSMutableArray * commandQueue;
-    NSString * commandRunning;
+    CommandType commandRunning;
+    __block NSMutableString * responseAccumulator;
+    BOOL preparingToReadCommand;
+    BOOL accumulatingResponse;
 }
 @property (weak) id <Writes> interface;
 - (void) prepare;

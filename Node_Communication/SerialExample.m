@@ -148,6 +148,48 @@ NSString *const EndOfTextChar = @"";
     });
 }
 
+- (void)treatCommandResponse:(NSString *)response withCompletionBlock:(void (^)(NSString *))completionBlock {
+    if (commandRunning == none) {
+        completionBlock(response);
+        return;
+    }
+    NSRange start = [response rangeOfString:StartOfTextChar];
+    NSRange end = [response rangeOfString:EndOfTextChar];
+    if (accumulatingResponse == NO) {
+        if (preparingToReadCommand == NO && start.location != NSNotFound) {
+            preparingToReadCommand = YES;
+        }
+        if (preparingToReadCommand && end.location != NSNotFound) {
+            preparingToReadCommand = NO;
+            accumulatingResponse = YES;
+            responseAccumulator = [NSMutableString string];
+            if (start.location != NSNotFound) {
+                start = [response rangeOfString:StartOfTextChar options:0 range:NSMakeRange(end.location, [response length] - end.location)];
+                end = [response rangeOfString:EndOfTextChar options:0 range:NSMakeRange(start.location, [response length] - start.location)];
+            } else {
+                start = NSMakeRange(NSNotFound, 0);
+                end = NSMakeRange(NSNotFound, 0);
+            }
+        }
+    }
+    if (accumulatingResponse == YES && (preparingToReadCommand == NO || (start.location != NSNotFound))){
+        if ((start.location != NSNotFound) || end.location != NSNotFound) {
+            if (start.location != NSNotFound) {
+                NSString * trimmed = [response substringFromIndex:start.location];
+                [responseAccumulator appendString: trimmed];
+            }
+            if (end.location != NSNotFound) {
+                [responseAccumulator appendString: response];
+                completionBlock([responseAccumulator copy]);
+                accumulatingResponse = NO;
+                commandRunning = none;
+            }
+        } else {
+            [responseAccumulator appendString: response];
+        }
+    }
+}
+
 // This selector/function will be called as another thread...
 //  this thread will read from the serial port and exits when the port is closed
 - (void)incomingTextUpdateThread: (NSThread *) parentThread {
@@ -158,10 +200,10 @@ NSString *const EndOfTextChar = @"";
 	char byte_buffer[BUFFER_SIZE]; // buffer for holding incoming data
 	long numBytes=0; // number of bytes read during read
 	NSString *text; // incoming text from the serial port
-    __block NSMutableString * acc = [NSMutableString string];
+    responseAccumulator = [NSMutableString string];
     
-    BOOL preparingToReadCommand = NO;
-    BOOL accumulatingResponse = NO;
+    preparingToReadCommand = NO;
+    accumulatingResponse = NO;
     
 	// assign a high priority to this thread
 	[NSThread setThreadPriority:1.0];
@@ -177,72 +219,34 @@ NSString *const EndOfTextChar = @"";
 //            NSLog(@"incoming: %@", text);
 			// this text can't be directly sent to the text area from this thread
 			//  BUT, we can call a selctor on the main thread.
-            if (commandRunning == nil) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self.interface logWithString:text];
-                });
-            } else {
-                NSLog(@"Reading files");
+//                NSLog(@"Reading files");
 //                NSLog(@"-\n%@\n-", text);
-                NSRange start = [text rangeOfString:StartOfTextChar];
-                NSRange end = [text rangeOfString:EndOfTextChar];
-                if (accumulatingResponse == NO) {
-                    if (preparingToReadCommand == NO && start.location != NSNotFound) {
-                        preparingToReadCommand = YES;
+            [self treatCommandResponse:text withCompletionBlock:^(NSString * response) {
+                switch (self->commandRunning) {
+                        
+                    case readingFiles:
+                    {
+                        [self fileReadingProcedure:response];
+                        NSRange end = [response rangeOfString:EndOfTextChar options:NSBackwardsSearch];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [self.interface logWithString:[response substringFromIndex:end.location]];
+                            self->responseAccumulator = nil;
+                        });
+                        break;
                     }
-                    if (preparingToReadCommand && end.location != NSNotFound) {
-                        preparingToReadCommand = NO;
-                        accumulatingResponse = YES;
-                        acc = [NSMutableString string];
-                        if (start.location != NSNotFound) {
-                            start = [text rangeOfString:StartOfTextChar options:0 range:NSMakeRange(end.location, [text length] - end.location)];
-                            end = [text rangeOfString:EndOfTextChar options:0 range:NSMakeRange(start.location, [text length] - start.location)];
-                        } else {
-                            start = NSMakeRange(NSNotFound, 0);
-                            end = NSMakeRange(NSNotFound, 0);
-                        }
-                    }
-                }
-                if (accumulatingResponse == YES && (preparingToReadCommand == NO || (start.location != NSNotFound))){
-                    if (start.location != NSNotFound && end.location != NSNotFound && start.location < end.location) {
-                        NSString * trimmed = [text substringFromIndex:start.location];
-                        [acc appendString: trimmed];
-                        if ([commandRunning isEqualToString:@"readingFiles"]) {
-                            [self fileReadingProcedure:acc];
-                        } else {
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                [self.interface logWithString:acc];
-                                [acc setString:@""];
-                            });
-                        }
-                        accumulatingResponse = NO;
-                        commandRunning = nil;
-                    } else if (start.location != NSNotFound) {
-                        [acc appendString: [text substringFromIndex:start.location]];
-                    } else if (end.location != NSNotFound) {
-                        [acc appendString: text];
-                        if ([commandRunning isEqualToString:@"readingFiles"]) {
-                            [self fileReadingProcedure:acc];
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                [self.interface logWithString:[text substringFromIndex:end.location]];
-                                acc = nil;
-                            });
-                        } else {
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                [self.interface logWithString:acc];
-                                acc = nil;
-                            });
-                        }
-                        accumulatingResponse = NO;
-                        commandRunning = nil;
-                    } else {
-                        [acc appendString: text];
+                    default:
+                    {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [self.interface logWithString:response];
+                            self->responseAccumulator = nil;
+                        });
+                        break;
                     }
                 }
-            }
-		} else {
-			break; // Stop the thread if there is an error
-		}
+            }];
+        } else {
+            break; // Stop the thread if there is an error
+        }
 	}
 	
 	// make sure the serial port is closed
@@ -275,15 +279,15 @@ NSString *const EndOfTextChar = @"";
     return [serialList copy];
 }
 
-- (void)runCommand: (NSString *)rawCommand withIdentifier:(NSString *)ID {
-    commandRunning = ID;
+- (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType {
+    commandRunning = cmdType;
     NSString * formattedCommand =  [NSString stringWithFormat:@"print('%@') %@ print('%@')", StartOfTextChar, rawCommand, EndOfTextChar];
     [self writeString:formattedCommand];
 }
 
-- (void)runCommand: (NSString *)rawCommand withIdentifier:(NSString *)ID andMessage:(NSString *)message {
+- (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType andMessage:(NSString *)message {
     [self.interface logWithAttributedString:[Helper formatAsSpecialMessage:message]];
-    [self runCommand:rawCommand withIdentifier:ID];
+    [self runCommand:rawCommand withIdentifier:cmdType];
 }
 
 - (void) restart {
@@ -293,17 +297,12 @@ NSString *const EndOfTextChar = @"";
 - (void) runFile: (NSString *) fileName {
     NSString * message = [NSString stringWithFormat:@"Running \"%@\"", fileName];
     NSString * command = [NSString stringWithFormat:@"dofile(\"%@\")", fileName];
-    [self runCommand:command withIdentifier:@"runFile" andMessage:message];
-//    commandRunning = @"runningFile";
-//    [self writeString:[self formatCommand:[NSString stringWithFormat:@"dofile(\"%@\")", fileName]]];
+    [self runCommand:command withIdentifier:common andMessage:message];
 }
 
 - (void) readFiles {
-//    readingFiles = TRUE;
-//    commandRunning = @"readingFiles";
     NSString * command = @"for name in pairs(file.list()) do print(name) end";
-//    [self writeString:command];
-    [self runCommand:command withIdentifier:@"readingFiles" andMessage:@"Update files list"];
+    [self runCommand:command withIdentifier:readingFiles andMessage:@"Update files list"];
 }
 
 typedef NSString Program;
