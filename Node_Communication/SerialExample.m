@@ -36,6 +36,7 @@ NSString *const EndOfTextChar = @"";
     NSLog(@"is thread running %d", readThreadRunning);
     [_interface updateConnectionStatusWithConnected: NO];
 }
+
 // open the serial port
 //   - nil is returned on success
 //   - an error message is returned otherwise
@@ -163,29 +164,37 @@ NSString *const EndOfTextChar = @"";
             preparingToReadCommand = NO;
             accumulatingResponse = YES;
             responseAccumulator = [NSMutableString string];
+            NSRange rangeAfterHeader = NSMakeRange(end.location, [response length] - end.location);
+            start = [response rangeOfString:StartOfTextChar options:0
+                                      range:rangeAfterHeader];
             if (start.location != NSNotFound) {
-                start = [response rangeOfString:StartOfTextChar options:0 range:NSMakeRange(end.location, [response length] - end.location)];
-                end = [response rangeOfString:EndOfTextChar options:0 range:NSMakeRange(start.location, [response length] - start.location)];
+                NSRange rangeOfBodySection = NSMakeRange(start.location, [response length] - start.location);
+                end = [response rangeOfString:EndOfTextChar options:0
+                                        range:rangeOfBodySection];
             } else {
                 start = NSMakeRange(NSNotFound, 0);
                 end = NSMakeRange(NSNotFound, 0);
+                return;
             }
         }
     }
     if (accumulatingResponse == YES && (preparingToReadCommand == NO || (start.location != NSNotFound))){
-        if ((start.location != NSNotFound) || end.location != NSNotFound) {
-            if (start.location != NSNotFound) {
-                NSString * trimmed = [response substringFromIndex:start.location];
-                [responseAccumulator appendString: trimmed];
-            }
-            if (end.location != NSNotFound) {
-                [responseAccumulator appendString: response];
-                completionBlock([responseAccumulator copy]);
-                accumulatingResponse = NO;
-                commandRunning = none;
-            }
-        } else {
+        if (accumulatingResponse == YES && start.location == NSNotFound && end.location == NSNotFound) {
             [responseAccumulator appendString: response];
+            return;
+        }
+        if (start.location != NSNotFound) {
+            response = [response substringFromIndex:start.location];
+            if (end.location == NSNotFound) {
+                [responseAccumulator appendString: response];
+            }
+        }
+        if (end.location != NSNotFound) {
+            [responseAccumulator appendString: response];
+            completionBlock([responseAccumulator copy]);
+            responseAccumulator = nil;
+            accumulatingResponse = NO;
+            commandRunning = none;
         }
     }
 }
@@ -217,13 +226,9 @@ NSString *const EndOfTextChar = @"";
 			// create an NSString from the incoming bytes (the bytes aren't null terminated)
 			text = [NSString stringWithCString:byte_buffer length:numBytes];
 //            NSLog(@"incoming: %@", text);
-			// this text can't be directly sent to the text area from this thread
-			//  BUT, we can call a selctor on the main thread.
-//                NSLog(@"Reading files");
 //                NSLog(@"-\n%@\n-", text);
             [self treatCommandResponse:text withCompletionBlock:^(NSString * response) {
                 switch (self->commandRunning) {
-                        
                     case readingFiles:
                     {
                         [self fileReadingProcedure:response];
@@ -238,7 +243,7 @@ NSString *const EndOfTextChar = @"";
                     {
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [self.interface logWithString:response];
-                            self->responseAccumulator = nil;
+//                            self->responseAccumulator = nil;
                         });
                         break;
                     }
@@ -259,6 +264,11 @@ NSString *const EndOfTextChar = @"";
 	readThreadRunning = FALSE;
 }
 
+/**
+ Returns a list with the path (/dev/...) of the connected devices.
+
+ @return A NSArray with NSString as element type.
+ */
 - (NSArray *) refreshSerialList {
     NSMutableArray * serialList = [[NSMutableArray alloc] init];
     
@@ -274,6 +284,7 @@ NSString *const EndOfTextChar = @"";
          (__bridge NSString*)IORegistryEntryCreateCFProperty(serialPort, CFSTR(kIOCalloutDeviceKey),  kCFAllocatorDefault, 0)];
 		IOObjectRelease(serialPort);
 	}
+    // kIOTTYDeviceKey pega o nome dos dispositivos (sem /dev/cu. no início)
 	
 	IOObjectRelease(serialPortIterator);
     return [serialList copy];
@@ -281,7 +292,13 @@ NSString *const EndOfTextChar = @"";
 
 - (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType {
     commandRunning = cmdType;
-    NSString * formattedCommand =  [NSString stringWithFormat:@"print('%@') %@ print('%@')", StartOfTextChar, rawCommand, EndOfTextChar];
+    NSString * formattedCommand =  [NSString stringWithFormat:
+                                    @"print('%@') "
+                                    @"local success,error=pcall(function() %@ end)"
+                                    @"if not success then "
+                                    @"uart.write(0, 'Error :/\\n'..error) end "
+                                    @"print('%@')",
+                                    StartOfTextChar, rawCommand, EndOfTextChar];
     [self writeString:formattedCommand];
 }
 
@@ -290,16 +307,30 @@ NSString *const EndOfTextChar = @"";
     [self runCommand:rawCommand withIdentifier:cmdType];
 }
 
+/**
+ Restarts the connected device.
+ */
 - (void) restart {
     [self writeString:@"node.restart()"];
 }
 
+/**
+ Runs a file on the connected device using 'dofile(filename)'.
+
+ @param fileName The full name of the file to be run.
+ (Not a path because there's no such thing on the device)
+ */
 - (void) runFile: (NSString *) fileName {
     NSString * message = [NSString stringWithFormat:@"Running \"%@\"", fileName];
     NSString * command = [NSString stringWithFormat:@"dofile(\"%@\")", fileName];
     [self runCommand:command withIdentifier:common andMessage:message];
 }
 
+/**
+ Runs the command to refresh the files' list.
+ When the response is complete, the incomingTextUpdateThread will
+ update the UI properly.
+ */
 - (void) readFiles {
     NSString * command = @"for name in pairs(file.list()) do print(name) end";
     [self runCommand:command withIdentifier:readingFiles andMessage:@"Update files list"];
@@ -333,24 +364,34 @@ typedef NSString Program;
     return [content stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
 }
 
+/**
+ Uploads a file from the computer to the connected device.
+
+ @param filePath The full path of the file on the computer.
+ */
 - (void) uploadFile:(NSURL *)filePath {
     NSData * file = [NSData dataWithContentsOfURL:filePath];
-    if (file == nil) {
+    if (file == nil) { // If couldn't read the file
         NSLog(@"Upload aborted because the file couldn't be loaded.");
         return;
     }
-    NSNumber * dataSize = @([file length] + 2);
     
+    // Prepare the dictionary that will be used to customize the upload program
+    NSNumber * dataSize = @([file length] + 2);
     NSDictionary * dict = [NSDictionary dictionaryWithObjects: @[filePath.lastPathComponent, dataSize.stringValue] forKeys: @[@"filename", @"filesize"]];
     
+    // Load and customize properly the upload program
     Program * prepareFileUpload = [self prepareProgram:@"FileUpload_Start" withData:dict];
     NSLog(@"\n--File--\n%@\n--------", prepareFileUpload);
-    if (prepareFileUpload == NULL) {
+    if (prepareFileUpload == NULL) { // If the program couldn't be loaded
         NSLog(@"Upload aborted because it couldn't be prepared.");
         return;
     }
+    
+    // Load the contents of the file onto a NSString
     NSString * fileContent = [[NSString alloc] initWithData: file encoding: NSUTF8StringEncoding];
     
+    // Effectively uploads the file
     dispatch_async(dispatch_get_main_queue(), ^{
         [self writeString: prepareFileUpload];
         [self writeString: fileContent];
