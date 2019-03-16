@@ -74,22 +74,22 @@ NSString *const EndOfTextChar = @"";
 	
 	if (serialFileDescriptor == -1) {
 		// check if the port opened correctly
-		errorMessage = @"Error: couldn't open serial port";
+		errorMessage = @"Couldn't open serial port";
 	} else {
 		// TIOCEXCL causes blocking of non-root processes on this serial-port
 		success = ioctl(serialFileDescriptor, TIOCEXCL);
 		if ( success == -1) {
-			errorMessage = @"Error: couldn't obtain lock on serial port";
+			errorMessage = @"Couldn't obtain lock on serial port";
 		} else {
 			success = fcntl(serialFileDescriptor, F_SETFL, 0);
 			if ( success == -1) {
 				// clear the O_NONBLOCK flag; all calls from here on out are blocking for non-root processes
-				errorMessage = @"Error: couldn't obtain lock on serial port";
+				errorMessage = @"Couldn't obtain lock on serial port";
 			} else {
 				// Get the current options and save them so we can restore the default settings later.
 				success = tcgetattr(serialFileDescriptor, &gOriginalTTYAttrs);
 				if ( success == -1) {
-					errorMessage = @"Error: couldn't get serial attributes";
+					errorMessage = @"Couldn't get serial attributes";
 				} else {
 					// copy the old termios settings into the current
 					//   you want to do this so that you get all the control characters assigned
@@ -108,17 +108,17 @@ NSString *const EndOfTextChar = @"";
 					// set tty attributes (raw-mode in this case)
 					success = tcsetattr(serialFileDescriptor, TCSANOW, &options);
 					if ( success == -1) {
-						errorMessage = @"Error: coudln't set serial attributes";
+						errorMessage = @"Coudln't set serial attributes";
 					} else {
 						// Set baud rate (any arbitrary baud rate can be set this way)
 						success = ioctl(serialFileDescriptor, IOSSIOSPEED, &baudRate);
 						if ( success == -1) {
-							errorMessage = @"Error: Baud Rate out of bounds";
+							errorMessage = @"Baud Rate out of bounds";
 						} else {
 							// Set the receive latency (a.k.a. don't wait to buffer data)
 							success = ioctl(serialFileDescriptor, IOSSDATALAT, &mics);
 							if ( success == -1) {
-								errorMessage = @"Error: coudln't set serial latency";
+								errorMessage = @"Couldn't set serial latency";
 							}
 						}
 					}
@@ -128,7 +128,7 @@ NSString *const EndOfTextChar = @"";
 	}
 	
 	// make sure the port is closed if a problem happens
-	if ((serialFileDescriptor == -1) && (errorMessage != nil)) {
+	if ((serialFileDescriptor == -1) && (errorMessage == nil)) {
 		close(serialFileDescriptor);
 		serialFileDescriptor = -1;
         [self.interface logWithString:@"Connection error."];
@@ -144,7 +144,7 @@ NSString *const EndOfTextChar = @"";
 - (void) fileReadingProcedure:(NSString *) commandResponse {
     NSArray * fileNames = [Helper filterFilenames:[commandResponse componentsSeparatedByString:@"\n"]];
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"f is %@", fileNames);
+//        NSLog(@"f is %@", fileNames);
         self.interface.files = fileNames;
     });
 }
@@ -264,79 +264,24 @@ NSString *const EndOfTextChar = @"";
 	readThreadRunning = FALSE;
 }
 
-/**
- Returns a list with the path (/dev/...) of the connected devices.
-
- @return A NSArray with NSString as element type.
- */
-- (NSArray *) refreshSerialList {
-    NSMutableArray * serialList = [[NSMutableArray alloc] init];
-    
-	io_object_t serialPort;
-	io_iterator_t serialPortIterator;
-	
-	// ask for all the serial ports
-	IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching(kIOSerialBSDServiceValue), &serialPortIterator);
-	
-	// loop through all the serial ports and add them to the array
-	while ((serialPort = IOIteratorNext(serialPortIterator))) {
-		[serialList addObject:
-         (__bridge NSString*)IORegistryEntryCreateCFProperty(serialPort, CFSTR(kIOCalloutDeviceKey),  kCFAllocatorDefault, 0)];
-		IOObjectRelease(serialPort);
-	}
-    // kIOTTYDeviceKey pega o nome dos dispositivos (sem /dev/cu. no início)
-	
-	IOObjectRelease(serialPortIterator);
-    return [serialList copy];
-}
-
 - (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType {
-    commandRunning = cmdType;
-    NSString * formattedCommand =  [NSString stringWithFormat:
-                                    @"print('%@') "
-                                    @"local success,error=pcall(function() %@ end)"
-                                    @"if not success then "
-                                    @"uart.write(0, 'Error :/\\n'..error) end "
-                                    @"print('%@')",
-                                    StartOfTextChar, rawCommand, EndOfTextChar];
-    [self writeString:formattedCommand];
+    [self runCommand:rawCommand withIdentifier:cmdType andMessage:NULL];
 }
 
 - (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType andMessage:(NSString *)message {
-    [self.interface logWithAttributedString:[Helper formatAsSpecialMessage:message]];
-    [self runCommand:rawCommand withIdentifier:cmdType];
+    NSLog(@"%hhd", [self.interface checkIfCanRunCommand]);
+    if (message != NULL) {
+        [self.interface logWithAttributedString:[Helper formatAsSpecialMessage:message]];
+    }
+    commandRunning = cmdType;
+    NSDictionary * dict = @{@"control begin":StartOfTextChar,
+                            @"command":rawCommand,
+                            @"control end":EndOfTextChar};
+    Program * wrappedCommand = [self prepareProgram:@"CommandWrapper" withData:dict];
+    [self writeString:wrappedCommand];
+//    [self runCommand:rawCommand withIdentifier:cmdType];
 }
 
-/**
- Restarts the connected device.
- */
-- (void) restart {
-    [self writeString:@"node.restart()"];
-}
-
-/**
- Runs a file on the connected device using 'dofile(filename)'.
-
- @param fileName The full name of the file to be run.
- (Not a path because there's no such thing on the device)
- */
-- (void) runFile: (NSString *) fileName {
-    NSString * message = [NSString stringWithFormat:@"Running \"%@\"", fileName];
-    NSString * command = [NSString stringWithFormat:@"dofile(\"%@\")", fileName];
-    [self runCommand:command withIdentifier:common andMessage:message];
-}
-
-/**
- Runs the command to refresh the files' list.
- When the response is complete, the incomingTextUpdateThread will
- update the UI properly.
- */
-- (void) readFiles {
-    NSString * command = @"for name in pairs(file.list()) do print(name) end";
-    [self runCommand:command withIdentifier:readingFiles andMessage:@"Update files list"];
-}
-
-typedef NSString Program;
 - (Program *) prepareProgram: (NSString *)programName withData:(NSDictionary *) dataDict {
     NSString * uploadProgramPath = [[NSBundle mainBundle] pathForResource:programName ofType:@"lua"];
     
@@ -344,7 +289,7 @@ typedef NSString Program;
                                                    encoding: NSUTF8StringEncoding
                                                       error: nil];
     NSRegularExpression* regex = [NSRegularExpression
-                                  regularExpressionWithPattern: @"<([A-Za-z]+)>"
+                                  regularExpressionWithPattern: @"<([A-Za-z\\s]+)>"
                                   options:0 error: nil];
     
     NSTextCheckingResult * matchRange = [regex firstMatchInString:content options:0 range:NSMakeRange(0, content.length)];
@@ -362,40 +307,6 @@ typedef NSString Program;
         matchRange = [regex firstMatchInString:content options:0 range:NSMakeRange(0, content.length)];
     }
     return [content stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
-}
-
-/**
- Uploads a file from the computer to the connected device.
-
- @param filePath The full path of the file on the computer.
- */
-- (void) uploadFile:(NSURL *)filePath {
-    NSData * file = [NSData dataWithContentsOfURL:filePath];
-    if (file == nil) { // If couldn't read the file
-        NSLog(@"Upload aborted because the file couldn't be loaded.");
-        return;
-    }
-    
-    // Prepare the dictionary that will be used to customize the upload program
-    NSNumber * dataSize = @([file length] + 2);
-    NSDictionary * dict = [NSDictionary dictionaryWithObjects: @[filePath.lastPathComponent, dataSize.stringValue] forKeys: @[@"filename", @"filesize"]];
-    
-    // Load and customize properly the upload program
-    Program * prepareFileUpload = [self prepareProgram:@"FileUpload_Start" withData:dict];
-    NSLog(@"\n--File--\n%@\n--------", prepareFileUpload);
-    if (prepareFileUpload == NULL) { // If the program couldn't be loaded
-        NSLog(@"Upload aborted because it couldn't be prepared.");
-        return;
-    }
-    
-    // Load the contents of the file onto a NSString
-    NSString * fileContent = [[NSString alloc] initWithData: file encoding: NSUTF8StringEncoding];
-    
-    // Effectively uploads the file
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self writeString: prepareFileUpload];
-        [self writeString: fileContent];
-    });
 }
 
 // send a string to the serial port

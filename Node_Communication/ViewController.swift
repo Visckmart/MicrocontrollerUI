@@ -33,8 +33,15 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     
     // MARK: Logic variables
     
-    private var isConnected: Bool = false
-    private var rawDeviceNames: [String] = []
+    private var isConnected: Bool = false {
+        didSet {
+            let connectionState = isConnected
+            uploadButton.isEnabled = connectionState
+            commandTextfield.isEnabled = connectionState
+            sendButton.isEnabled = connectionState
+            checkFileRefresh()
+        }
+    }
     private var consoleTextStorage: NSTextStorage {
         get {
             return (consoleTextView.documentView as! NSTextView).textStorage!
@@ -58,6 +65,8 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     }
     
     let serial = SerialExample()
+    let deviceControl = DeviceIntegration()
+    let deviceDiscovery = DeviceDiscovery()
     
     // MARK: - Setup e Layout
     
@@ -66,7 +75,8 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
 
         // Do any additional setup after loading the view.
         (consoleTextView.documentView as! NSTextView).isEditable = false
-        
+        isConnected = false
+        deviceControl.serial = serial
         serial.interface = self
         serial.prepare()
         refreshList()
@@ -108,9 +118,9 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     {
 //        print("doubleClickOnResultRow \((sideBarWrapper.documentView as? NSOutlineView)?.clickedRow)")
         if sideBar.clickedRow == 0 {
-            serial.readFiles()
+            deviceControl.readFiles()
         } else {
-            serial.runFile((sideBar.dataSource as! SidebarOutlineView).nomes[sideBar.clickedRow-1])
+            deviceControl.runFile((sideBar.dataSource as! SidebarOutlineView).nomes[sideBar.clickedRow-1])
         }
         sideBar.deselectRow(sideBar.clickedRow)
     }
@@ -120,7 +130,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         if view.frame.width <= 515 {
             restartCheckbox.title = "Restart"
         } else {
-            restartCheckbox.title = "Restart on connection"
+            restartCheckbox.title = "Restart and refresh files on connection"
         }
     }
 
@@ -128,14 +138,16 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     
     @IBAction func refreshList(_ sender: NSButton? = nil) {
         connectionsList.removeAllItems()
-        if let connectedDevices = serial.refreshSerialList() as? [String] {
-            self.rawDeviceNames = connectedDevices
-            connectionsList.addItems(withTitles: tryCleaningNames(deviceNames: connectedDevices))
-            connectionsList.isEnabled = true
+        deviceDiscovery.refreshSerialList()
+        if let connectedDevicePaths = deviceDiscovery.pathList as? [String],
+           let connectedDeviceNames = deviceDiscovery.nameList as? [String] {
+            connectionsList.addItems(withTitles: connectedDeviceNames)
             if let favoriteDevice = favoriteDevice,
-                let positionOfFav = rawDeviceNames.firstIndex(of: favoriteDevice) {
+               let positionOfFav = connectedDevicePaths.firstIndex(of: favoriteDevice) {
                 connectionsList.selectItem(at: positionOfFav)
             }
+            
+            connectionsList.isEnabled = true
             connectButton.isEnabled = true
         } else {
             connectionsList.isEnabled = false
@@ -154,10 +166,20 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
                 print("No item selected")
                 return
             }
-            print("Will try to connect to \(rawDeviceNames[indexOfSelectedItem])")
-            let item = rawDeviceNames[indexOfSelectedItem]
-            print(serial.openSerialPort(item, baud: speed_t(115200)))
-            if restartCheckbox.state == .on { serial.restart() }
+            print("Will try to connect to \(deviceDiscovery.pathList[indexOfSelectedItem] as? String)")
+            let item = deviceDiscovery.pathList[indexOfSelectedItem] as! String
+            let openingResponse = serial.openSerialPort(item, baud: speed_t(115200))
+            if openingResponse != nil {
+                let alert = NSAlert()
+                alert.messageText = "Não foi possível conectar ao dispositivo."
+                alert.informativeText = openingResponse!
+                alert.icon = NSImage(named: NSImage.cautionName)
+                alert.runModal()
+            }
+            if restartCheckbox.state == .on {
+                deviceControl.restart()
+                deviceControl.readFiles()
+            }
             else { canWrite = true }
             serial.performSelector(inBackground: #selector(serial.incomingTextUpdate(_:)), with: Thread.main)
             
@@ -172,24 +194,35 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     // MARK: Writes protocol
     
     var canWrite = false
+    func checkIfCanRunCommand() -> Bool {
+//        print("Console text: \(consoleTextStorage.string)")
+        let regex = try! NSRegularExpression(pattern: "\\n> $", options: [])
+        print("Matches: ",regex.matches(in: consoleTextStorage.string, options: [], range: NSRange(location: 0, length: consoleTextStorage.string.count) ))
+        return true
+    }
     
     func log(string: String) {
-//        print("Write called")
-        
-        var newString = string
-        if string.contains("NodeMCU") {
-            canWrite = true
-            newString = String(newString.suffix(from: newString.firstIndex(of: "N")!))
-        }
-        if canWrite {
-            consoleTextStorage.append(NSAttributedString(string: newString))
-            (consoleTextView.documentView as! NSTextView).scrollToEndOfDocument(self)
-        }
+        log(attributedString: NSAttributedString(string: string))
     }
     
     func log(attributedString: NSAttributedString) {
-        consoleTextStorage.append(attributedString)
-        (consoleTextView.documentView as! NSTextView).scrollToEndOfDocument(self)
+        let newString = NSMutableAttributedString(attributedString: attributedString)
+        if newString.string.contains("NodeMCU") {
+            canWrite = true
+            guard let firstIndexOfN = newString.string.firstIndex(of: "N") else {
+                return
+            }
+            let partitionedString = newString.string.suffix(from: firstIndexOfN)
+            newString.mutableString.setString(String(partitionedString))
+        }
+        if canWrite {
+            consoleTextStorage.append(newString)
+            let visibleRect = consoleTextView.documentVisibleRect
+            let bottomOfVisibleRect = visibleRect.origin.y + visibleRect.size.height
+            if bottomOfVisibleRect == consoleTextView.documentView?.bounds.height {
+                (consoleTextView.documentView as! NSTextView).scrollToEndOfDocument(self)
+            }
+        }
     }
     
     func updateConnectionStatus(connected: Bool) {
@@ -208,7 +241,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
                 print("Panel URL: \(String(describing: panel.url))")
                 if let fileURL = panel.url {
 //                    self.serial.write("print('Would upload file \(fileURL.lastPathComponent)')")
-                    self.serial.uploadFile(fileURL)
+                    self.deviceControl.uploadFile(fileURL)
                     
                     // TODO: Improve with Swift 5
                     if let lastModif = try? getLastModifiedDate(ofFile: fileURL.path) {
@@ -229,7 +262,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
             return
         }
 //        self.serial.write("print('Will reupload file \(lastUploadedFile.url)')")
-        self.serial.uploadFile(lastUploadedFile.url)
+        deviceControl.uploadFile(lastUploadedFile.url)
         if let lastModif = try? getLastModifiedDate(ofFile: lastUploadedFile.url.path) {
             self.lastUploadedFile!.lastModified = lastModif!
         }

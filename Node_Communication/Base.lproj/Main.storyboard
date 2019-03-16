@@ -960,7 +960,7 @@
                                 </textFieldCell>
                             </textField>
                             <popUpButton horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="fgL-oL-Elo">
-                                <rect key="frame" x="65" y="967" width="438" height="25"/>
+                                <rect key="frame" x="65" y="967" width="337" height="25"/>
                                 <popUpButtonCell key="cell" type="push" title="wchusbserial1420" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" enabled="NO" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="6tb-3U-KP8" id="umK-fu-Lpy">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="menu"/>
@@ -1030,8 +1030,8 @@ CQ
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="3v1-lJ-fRA">
-                                <rect key="frame" x="506" y="972" width="156" height="18"/>
-                                <buttonCell key="cell" type="check" title="Restart on connection" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="fJK-oK-wZn">
+                                <rect key="frame" x="405" y="972" width="257" height="18"/>
+                                <buttonCell key="cell" type="check" title="Restart and refresh files on connection" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="fJK-oK-wZn">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>

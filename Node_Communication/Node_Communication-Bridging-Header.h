@@ -4,3 +4,5 @@
 
 #import "SerialExample.h"
 #import "HelperFunctions-ObjC.m"
+#import "DeviceIntegration.m"
+#import "DeviceDiscovery.m"

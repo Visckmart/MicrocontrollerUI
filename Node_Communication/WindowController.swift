@@ -17,7 +17,7 @@ class WindowController: NSWindowController, NSWindowDelegate {
     }
     
     func windowDidResize(_ notification: Notification) {
-            (contentViewController as! ViewController).adaptLayout()
+        (contentViewController as! ViewController).adaptLayout()
     }
     
     func windowDidBecomeMain(_ notification: Notification) {

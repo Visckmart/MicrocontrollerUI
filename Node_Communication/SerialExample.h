@@ -40,17 +40,17 @@ typedef NS_ENUM(NSInteger, CommandType) {
     BOOL accumulatingResponse;
 }
 @property (weak) id <Writes> interface;
+- (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType;
+- (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType andMessage:(NSString *)message;
+typedef NSString Program;
+- (Program *) prepareProgram: (NSString *)programName withData:(NSDictionary *) dataDict;
 - (void) prepare;
-//- (void) callSelec;
-- (void) runFile: (NSString *) fileName;
-- (void) readFiles;
-- (void) uploadFile:(NSURL *)filePath;
-- (void) restart;
+//- (void) uploadFile:(NSURL *)filePath;
 - (void) closeSerialPort;
 - (NSString *) openSerialPort: (NSString *)serialPortFile baud: (speed_t)baudRate;
 //- (void)appendToIncomingText: (id) text;
 - (void)incomingTextUpdateThread: (NSThread *) parentThread;
-- (NSArray *) refreshSerialList;
+//- (NSArray *) refreshSerialList;
 - (void) writeString: (NSString *) str;
 //- (void) writeByte: (uint8_t *) val;
 //- (IBAction) serialPortSelected: (id) cntrl;

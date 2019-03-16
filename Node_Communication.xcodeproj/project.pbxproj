@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		7E0F4AB4222C810A00C0C57E /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E0F4AB3222C810A00C0C57E /* Utilities.swift */; };
 		7E0F4AB6222CAD2700C0C57E /* SidebarOutlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E0F4AB5222CAD2700C0C57E /* SidebarOutlineView.swift */; };
+		7E2E04D42239DA020077A008 /* CommandWrapper.lua in Resources */ = {isa = PBXBuildFile; fileRef = 7E2E04D32239DA020077A008 /* CommandWrapper.lua */; };
+		7E2E04D62239DCF60077A008 /* DeviceIntegration.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E2E04D52239DCF60077A008 /* DeviceIntegration.m */; };
+		7E2E04DB2239EE020077A008 /* DeviceDiscovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E2E04DA2239EE020077A008 /* DeviceDiscovery.m */; };
 		7E4844FF22321AEE00A24055 /* HelperFunctions-ObjC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E4844FE22321AEE00A24055 /* HelperFunctions-ObjC.m */; };
 		7E81C127222B5C1D001FCAC7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C126222B5C1D001FCAC7 /* AppDelegate.swift */; };
 		7E81C129222B5C1D001FCAC7 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C128222B5C1D001FCAC7 /* ViewController.swift */; };
@@ -23,6 +26,10 @@
 /* Begin PBXFileReference section */
 		7E0F4AB3222C810A00C0C57E /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		7E0F4AB5222CAD2700C0C57E /* SidebarOutlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarOutlineView.swift; sourceTree = "<group>"; };
+		7E2E04D32239DA020077A008 /* CommandWrapper.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = CommandWrapper.lua; sourceTree = "<group>"; };
+		7E2E04D52239DCF60077A008 /* DeviceIntegration.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceIntegration.m; sourceTree = "<group>"; };
+		7E2E04D72239DD500077A008 /* DeviceIntegration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeviceIntegration.h; sourceTree = "<group>"; };
+		7E2E04DA2239EE020077A008 /* DeviceDiscovery.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceDiscovery.m; sourceTree = "<group>"; };
 		7E4844FE22321AEE00A24055 /* HelperFunctions-ObjC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "HelperFunctions-ObjC.m"; sourceTree = "<group>"; };
 		7E48450122321D7800A24055 /* HelperFunctions-ObjC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HelperFunctions-ObjC.h"; sourceTree = "<group>"; };
 		7E81C123222B5C1D001FCAC7 /* Node_Communication.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Node_Communication.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -51,6 +58,48 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7E2E04DC223A020A0077A008 /* Serial */ = {
+			isa = PBXGroup;
+			children = (
+				7E81C138222B5C36001FCAC7 /* SerialExample.h */,
+				7E81C137222B5C35001FCAC7 /* SerialExample.m */,
+				7E2E04DA2239EE020077A008 /* DeviceDiscovery.m */,
+				7E2E04D72239DD500077A008 /* DeviceIntegration.h */,
+				7E2E04D52239DCF60077A008 /* DeviceIntegration.m */,
+			);
+			name = Serial;
+			sourceTree = "<group>";
+		};
+		7E2E04DD223A021E0077A008 /* Lua */ = {
+			isa = PBXGroup;
+			children = (
+				7EA5B2D6222EFFFD001947B2 /* FileUpload_Start.lua */,
+				7E2E04D32239DA020077A008 /* CommandWrapper.lua */,
+			);
+			name = Lua;
+			sourceTree = "<group>";
+		};
+		7E2E04DE223A02280077A008 /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				7E81C126222B5C1D001FCAC7 /* AppDelegate.swift */,
+				7E81C12A222B5C1F001FCAC7 /* Assets.xcassets */,
+				7E81C12F222B5C1F001FCAC7 /* Info.plist */,
+				7E81C130222B5C1F001FCAC7 /* Node_Communication.entitlements */,
+			);
+			name = Other;
+			sourceTree = "<group>";
+		};
+		7E2E04DF223A027A0077A008 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				7E48450122321D7800A24055 /* HelperFunctions-ObjC.h */,
+				7E4844FE22321AEE00A24055 /* HelperFunctions-ObjC.m */,
+				7E0F4AB3222C810A00C0C57E /* Utilities.swift */,
+			);
+			name = Utilities;
+			sourceTree = "<group>";
+		};
 		7E81C11A222B5C1D001FCAC7 = {
 			isa = PBXGroup;
 			children = (
@@ -70,21 +119,15 @@
 		7E81C125222B5C1D001FCAC7 /* Node_Communication */ = {
 			isa = PBXGroup;
 			children = (
-				7E81C126222B5C1D001FCAC7 /* AppDelegate.swift */,
 				7E81C13A222B7F03001FCAC7 /* WindowController.swift */,
 				7E81C128222B5C1D001FCAC7 /* ViewController.swift */,
-				7E0F4AB3222C810A00C0C57E /* Utilities.swift */,
-				7E81C138222B5C36001FCAC7 /* SerialExample.h */,
-				7E81C137222B5C35001FCAC7 /* SerialExample.m */,
-				7E48450122321D7800A24055 /* HelperFunctions-ObjC.h */,
-				7E4844FE22321AEE00A24055 /* HelperFunctions-ObjC.m */,
+				7E2E04DC223A020A0077A008 /* Serial */,
+				7E2E04DF223A027A0077A008 /* Utilities */,
 				7E81C13C222B942A001FCAC7 /* InterfaceProtocol.swift */,
 				7E0F4AB5222CAD2700C0C57E /* SidebarOutlineView.swift */,
-				7E81C12A222B5C1F001FCAC7 /* Assets.xcassets */,
 				7E81C12C222B5C1F001FCAC7 /* Main.storyboard */,
-				7EA5B2D6222EFFFD001947B2 /* FileUpload_Start.lua */,
-				7E81C12F222B5C1F001FCAC7 /* Info.plist */,
-				7E81C130222B5C1F001FCAC7 /* Node_Communication.entitlements */,
+				7E2E04DD223A021E0077A008 /* Lua */,
+				7E2E04DE223A02280077A008 /* Other */,
 				7E81C136222B5C34001FCAC7 /* Node_Communication-Bridging-Header.h */,
 			);
 			path = Node_Communication;
@@ -151,6 +194,7 @@
 			files = (
 				7E81C12B222B5C1F001FCAC7 /* Assets.xcassets in Resources */,
 				7E81C12E222B5C1F001FCAC7 /* Main.storyboard in Resources */,
+				7E2E04D42239DA020077A008 /* CommandWrapper.lua in Resources */,
 				7EA5B2D7222EFFFD001947B2 /* FileUpload_Start.lua in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -164,7 +208,9 @@
 			files = (
 				7E0F4AB4222C810A00C0C57E /* Utilities.swift in Sources */,
 				7E0F4AB6222CAD2700C0C57E /* SidebarOutlineView.swift in Sources */,
+				7E2E04DB2239EE020077A008 /* DeviceDiscovery.m in Sources */,
 				7E81C129222B5C1D001FCAC7 /* ViewController.swift in Sources */,
+				7E2E04D62239DCF60077A008 /* DeviceIntegration.m in Sources */,
 				7E81C13B222B7F03001FCAC7 /* WindowController.swift in Sources */,
 				7E81C127222B5C1D001FCAC7 /* AppDelegate.swift in Sources */,
 				7E4844FF22321AEE00A24055 /* HelperFunctions-ObjC.m in Sources */,
