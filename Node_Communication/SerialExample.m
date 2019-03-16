@@ -8,6 +8,7 @@
 #import "SerialExample.h"
 #import "HelperFunctions-ObjC.h"
 #import "Node_Communication-Swift.h"
+#include <sys/time.h>
 
 @implementation SerialExample
 
@@ -18,25 +19,16 @@ NSString *const EndOfTextChar = @"";
 - (void)prepare {
 	// we don't have a serial port open yet
 	serialFileDescriptor = -1;
-	readThreadRunning = FALSE;
+	self.readThreadRunning = FALSE;
+    [self addObserver:self forKeyPath:@"readThreadRunning" options:NSKeyValueObservingOptionInitial context:NULL];
 }
 
-- (void) closeSerialPort {
-    if (serialFileDescriptor != -1) {
-        readThreadRunning = FALSE;
-        close(serialFileDescriptor);
-        serialFileDescriptor = -1;
-        
-        // wait for the reading thread to die
-//        while(readThreadRunning);
-        
-        // re-opening the same port REALLY fast will fail spectacularly... better to sleep a sec
-//        sleep(0.5);
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    if ([keyPath isEqualToString:@"readThreadRunning"]) {
+        self.interface.isConnected = self.readThreadRunning;
+        NSLog(@"Read thread changed to: %s", self.readThreadRunning ? "Running" : "Not running");
     }
-    NSLog(@"is thread running %d", readThreadRunning);
-    [_interface updateConnectionStatusWithConnected: NO];
 }
-
 // open the serial port
 //   - nil is returned on success
 //   - an error message is returned otherwise
@@ -49,7 +41,7 @@ NSString *const EndOfTextChar = @"";
 		serialFileDescriptor = -1;
 		
 		// wait for the reading thread to die
-		while(readThreadRunning);
+		while(self.readThreadRunning);
 		
 		// re-opening the same port REALLY fast will fail spectacularly... better to sleep a sec
 		sleep(0.5);
@@ -132,21 +124,27 @@ NSString *const EndOfTextChar = @"";
 		close(serialFileDescriptor);
 		serialFileDescriptor = -1;
         [self.interface logWithString:@"Connection error."];
-        [_interface updateConnectionStatusWithConnected: NO];
+//        [_interface updateConnectionStatusWithConnected: NO];
     } else {
         [self.interface logWithString:@"Successfully connected!"];
-        [_interface updateConnectionStatusWithConnected: YES];
+//        [_interface updateConnectionStatusWithConnected: YES];
     }
     
 	return errorMessage;
 }
 
-- (void) fileReadingProcedure:(NSString *) commandResponse {
-    NSArray * fileNames = [Helper filterFilenames:[commandResponse componentsSeparatedByString:@"\n"]];
-    dispatch_async(dispatch_get_main_queue(), ^{
-//        NSLog(@"f is %@", fileNames);
-        self.interface.files = fileNames;
-    });
+- (void) closeSerialPort {
+    self.readThreadRunning = FALSE;
+    if (serialFileDescriptor != -1) {
+        self.readThreadRunning = FALSE;
+//        fflush(serialFileDescriptor);
+        [self.interface stopReading];
+        close(serialFileDescriptor);
+        serialFileDescriptor = -1;
+        [self.interface logWithAttributedString:[Helper formatAsSpecialMessage:@"Serial port closed" withType:MessageType_Important]];
+    }
+    NSLog(@"is thread running %d", self.readThreadRunning);
+    //    [_interface updateConnectionStatusWithConnected: NO];
 }
 
 - (void)treatCommandResponse:(NSString *)response withCompletionBlock:(void (^)(NSString *))completionBlock {
@@ -204,7 +202,7 @@ NSString *const EndOfTextChar = @"";
 - (void)incomingTextUpdateThread: (NSThread *) parentThread {
 	
 	// mark that the thread is running
-	readThreadRunning = TRUE;
+	self.readThreadRunning = TRUE;
 	const int BUFFER_SIZE = 100;
 	char byte_buffer[BUFFER_SIZE]; // buffer for holding incoming data
 	long numBytes=0; // number of bytes read during read
@@ -214,45 +212,61 @@ NSString *const EndOfTextChar = @"";
     preparingToReadCommand = NO;
     accumulatingResponse = NO;
     
-	// assign a high priority to this thread
+    int result;
+    fd_set readset;
+    
+    // assign a high priority to this thread
 	[NSThread setThreadPriority:1.0];
 	
 	// this will loop unitl the serial port closes
-	while(readThreadRunning) {
-        if (serialFileDescriptor == -1) { break; }
+	while(self.readThreadRunning) {
+//        NSLog(@"%@", self.readThreadRunning ? @"running" : @"stopped");
+        
+//        if (serialFileDescriptor == -1) { break; }
 		// read() blocks until some data is available or the port is closed
-		numBytes = read(serialFileDescriptor, byte_buffer, BUFFER_SIZE); // read up to the size of the buffer
-		if(numBytes>0) {
-			// create an NSString from the incoming bytes (the bytes aren't null terminated)
-			text = [NSString stringWithCString:byte_buffer length:numBytes];
-//            NSLog(@"incoming: %@", text);
-//                NSLog(@"-\n%@\n-", text);
-            [self treatCommandResponse:text withCompletionBlock:^(NSString * response) {
-                switch (self->commandRunning) {
-                    case readingFiles:
-                    {
-                        [self fileReadingProcedure:response];
-                        NSRange end = [response rangeOfString:EndOfTextChar options:NSBackwardsSearch];
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [self.interface logWithString:[response substringFromIndex:end.location]];
-                            self->responseAccumulator = nil;
-                        });
-                        break;
-                    }
-                    default:
-                    {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [self.interface logWithString:response];
-//                            self->responseAccumulator = nil;
-                        });
-                        break;
-                    }
+        FD_ZERO(&readset);
+        FD_SET(serialFileDescriptor, &readset);
+        result = select(serialFileDescriptor + 1, &readset, NULL, NULL, NULL);
+        if (result > 0) {
+            if (FD_ISSET(serialFileDescriptor, &readset)) {
+                /* The socket_fd has data available to be read */
+                numBytes = read(serialFileDescriptor, byte_buffer, BUFFER_SIZE); // read up to the size of the buffer
+                if(numBytes>0) {
+                    // create an NSString from the incoming bytes (the bytes aren't null terminated)
+                    text = [NSString stringWithCString:byte_buffer length:numBytes];
+                    //            NSLog(@"incoming: %@", text);
+                    //                NSLog(@"-\n%@\n-", text);
+                    [self treatCommandResponse:text withCompletionBlock:^(NSString * response) {
+                        switch (self->commandRunning) {
+                            case readingFiles:
+                            {
+                                NSArray * fileNames = [Helper filterFilenames:[response componentsSeparatedByString:@"\n"]];
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    self.interface.files = fileNames;
+                                });
+                                NSRange end = [response rangeOfString:EndOfTextChar options:NSBackwardsSearch];
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [self.interface logWithString:[response substringFromIndex:end.location]];
+                                    self->responseAccumulator = nil;
+                                });
+                                break;
+                            }
+                            default:
+                            {
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [self.interface logWithString:response];
+                                    //                            self->responseAccumulator = nil;
+                                });
+                                break;
+                            }
+                        }
+                    }];
                 }
-            }];
+            }
         } else {
             break; // Stop the thread if there is an error
         }
-	}
+    }
 	
 	// make sure the serial port is closed
 	if (serialFileDescriptor != -1) {
@@ -261,17 +275,17 @@ NSString *const EndOfTextChar = @"";
 	}
 	
 	// mark that the thread has quit
-	readThreadRunning = FALSE;
+	self.readThreadRunning = FALSE;
 }
 
 - (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType {
-    [self runCommand:rawCommand withIdentifier:cmdType andMessage:NULL];
+    [self runCommand:rawCommand withIdentifier:cmdType andMessage:NULL withMessageType:MessageType_Common];
 }
 
-- (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType andMessage:(NSString *)message {
+- (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType andMessage:(NSString *)message withMessageType:(MessageType)messageType {
     NSLog(@"%hhd", [self.interface checkIfCanRunCommand]);
     if (message != NULL) {
-        [self.interface logWithAttributedString:[Helper formatAsSpecialMessage:message]];
+        [self.interface logWithAttributedString:[Helper formatAsSpecialMessage:message withType:messageType]];
     }
     commandRunning = cmdType;
     NSDictionary * dict = @{@"control begin":StartOfTextChar,
@@ -311,15 +325,15 @@ NSString *const EndOfTextChar = @"";
 
 // send a string to the serial port
 - (void) writeString: (NSString *) str {
-	if(serialFileDescriptor!=-1) {
+//    if(serialFileDescriptor!=-1) {
         NSString * temp = [str stringByAppendingString:[NSString stringWithFormat:@"%c%c", 13, 10]];
         NSLog(@"%s", [temp cStringUsingEncoding:NSASCIIStringEncoding]);
 		write(serialFileDescriptor, [temp cStringUsingEncoding:NSASCIIStringEncoding], [temp length]);
 //        sleep(1);
-	} else {
-		// make sure the user knows they should select a serial port
-		[self.interface logWithString:@"\n ERROR:  Select a Serial Port from the pull-down menu"];
-	}
+//    } else {
+//        // make sure the user knows they should select a serial port
+//        [self.interface logWithString:@"\n ERROR:  Select a Serial Port from the pull-down menu"];
+//    }
 }
 
 // action from the reset button

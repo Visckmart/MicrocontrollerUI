@@ -9,9 +9,11 @@
 import Foundation
 
 @objc protocol Writes {
+    var isConnected: Bool { get set }
     func log(string: String)
     func log(attributedString: NSAttributedString)
     func checkIfCanRunCommand() -> Bool
+    func stopReading()
     func updateConnectionStatus(connected: Bool)
     var files: [String] { get set }
 }

@@ -27,7 +27,7 @@
 - (void) runFile: (NSString *) fileName {
     NSString * message = [NSString stringWithFormat:@"Running \"%@\"", fileName];
     NSString * command = [NSString stringWithFormat:@"dofile(\"%@\")", fileName];
-    [self.serial runCommand:command withIdentifier:common andMessage:message];
+    [self.serial runCommand:command withIdentifier:common andMessage:message withMessageType:MessageType_Common];
 }
 
 /**
@@ -37,7 +37,7 @@
  */
 - (void) readFiles {
     NSString * command = @"for name in pairs(file.list()) do print(name) end";
-    [self.serial runCommand:command withIdentifier:readingFiles andMessage:@"Update files list"];
+    [self.serial runCommand:command withIdentifier:readingFiles andMessage:@"Update files list" withMessageType:MessageType_Common];
 }
 
 typedef NSString Program;

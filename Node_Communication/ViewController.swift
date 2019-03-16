@@ -33,13 +33,15 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     
     // MARK: Logic variables
     
-    private var isConnected: Bool = false {
+    var isConnected: Bool = false {
         didSet {
-            let connectionState = isConnected
-            uploadButton.isEnabled = connectionState
-            commandTextfield.isEnabled = connectionState
-            sendButton.isEnabled = connectionState
-            checkFileRefresh()
+            DispatchQueue.main.async {
+                let connectionState = self.isConnected
+                self.uploadButton.isEnabled = connectionState
+                self.commandTextfield.isEnabled = connectionState
+                self.sendButton.isEnabled = connectionState
+                self.checkFileRefresh()
+            }
         }
     }
     private var consoleTextStorage: NSTextStorage {
@@ -158,6 +160,13 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     @IBAction func serialListAction(_ sender: Any) {
 //        print(connectionsList.selectedItem?.title)
     }
+    lazy var dq: Thread = {
+        return Thread(target: serial, selector: #selector(serial.incomingTextUpdate(_:)), object: nil)
+    }()
+    
+    func stopReading() {
+        dq.cancel()
+    }
     
     @IBAction func connectButtonClicked(_ sender: NSButton) {
         if isConnected == false {
@@ -175,19 +184,24 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
                 alert.informativeText = openingResponse!
                 alert.icon = NSImage(named: NSImage.cautionName)
                 alert.runModal()
+            } else {
+                if restartCheckbox.state == .on {
+                    deviceControl.restart()
+                    deviceControl.readFiles()
+                }
+                else { canWrite = true }
+                dq.start()
+//                dq.add
+//                serial.performSelector(inBackground: #selector(serial.incomingTextUpdate(_:)), with: Thread.main)
+                
+                print("Favorite: \(favoriteDevice ?? "no favorite")")
+                favoriteDevice = item
+                isConnected = true
             }
-            if restartCheckbox.state == .on {
-                deviceControl.restart()
-                deviceControl.readFiles()
-            }
-            else { canWrite = true }
-            serial.performSelector(inBackground: #selector(serial.incomingTextUpdate(_:)), with: Thread.main)
-            
-            print("Favorite: \(favoriteDevice ?? "no favorite")")
-            favoriteDevice = item
         } else {
             print("Would try to disconnect.")
-//            serial.closeSerialPort()
+            serial.closeSerialPort()
+            dq = Thread(target: serial, selector: #selector(serial.incomingTextUpdate(_:)), object: nil)
         }
     }
     

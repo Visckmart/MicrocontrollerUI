@@ -28,7 +28,7 @@
     return [filteredArray copy];
 }
 
-+ (NSAttributedString *)formatAsSpecialMessage:(NSString *)rawString {
++ (NSAttributedString *)formatAsSpecialMessage:(NSString *)rawString withType:(MessageType)messageType {
     NSMutableAttributedString * message = [[NSMutableAttributedString alloc] initWithString:rawString];
     NSRange messageRange = NSMakeRange(0, message.length);
     
@@ -36,7 +36,13 @@
     fontDescriptor = [fontDescriptor fontDescriptorWithSymbolicTraits:[fontDescriptor symbolicTraits] | NSFontItalicTrait];
     NSFont * fontWithStyle = [NSFont fontWithDescriptor:fontDescriptor size:12];
     [message addAttribute:NSFontAttributeName value:fontWithStyle range:messageRange];
-    [message addAttribute:NSForegroundColorAttributeName value:[NSColor darkGrayColor] range:messageRange];
+    NSColor * messageColor;
+    if (messageType == MessageType_Common) {
+        messageColor = [NSColor darkGrayColor];
+    } else if (messageType == MessageType_Important) {
+        messageColor = [NSColor redColor];
+    }
+    [message addAttribute:NSForegroundColorAttributeName value:messageColor range:messageRange];
     return [message copy];
 }
 

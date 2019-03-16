@@ -13,6 +13,7 @@
 		7E2E04D62239DCF60077A008 /* DeviceIntegration.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E2E04D52239DCF60077A008 /* DeviceIntegration.m */; };
 		7E2E04DB2239EE020077A008 /* DeviceDiscovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E2E04DA2239EE020077A008 /* DeviceDiscovery.m */; };
 		7E4844FF22321AEE00A24055 /* HelperFunctions-ObjC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E4844FE22321AEE00A24055 /* HelperFunctions-ObjC.m */; };
+		7E6708AB223DB5C700D182C2 /* MessageType.h in Sources */ = {isa = PBXBuildFile; fileRef = 7E6708AA223DB5C700D182C2 /* MessageType.h */; };
 		7E81C127222B5C1D001FCAC7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C126222B5C1D001FCAC7 /* AppDelegate.swift */; };
 		7E81C129222B5C1D001FCAC7 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C128222B5C1D001FCAC7 /* ViewController.swift */; };
 		7E81C12B222B5C1F001FCAC7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7E81C12A222B5C1F001FCAC7 /* Assets.xcassets */; };
@@ -32,6 +33,7 @@
 		7E2E04DA2239EE020077A008 /* DeviceDiscovery.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceDiscovery.m; sourceTree = "<group>"; };
 		7E4844FE22321AEE00A24055 /* HelperFunctions-ObjC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "HelperFunctions-ObjC.m"; sourceTree = "<group>"; };
 		7E48450122321D7800A24055 /* HelperFunctions-ObjC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HelperFunctions-ObjC.h"; sourceTree = "<group>"; };
+		7E6708AA223DB5C700D182C2 /* MessageType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MessageType.h; sourceTree = "<group>"; };
 		7E81C123222B5C1D001FCAC7 /* Node_Communication.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Node_Communication.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E81C126222B5C1D001FCAC7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7E81C128222B5C1D001FCAC7 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -61,6 +63,7 @@
 		7E2E04DC223A020A0077A008 /* Serial */ = {
 			isa = PBXGroup;
 			children = (
+				7E6708AA223DB5C700D182C2 /* MessageType.h */,
 				7E81C138222B5C36001FCAC7 /* SerialExample.h */,
 				7E81C137222B5C35001FCAC7 /* SerialExample.m */,
 				7E2E04DA2239EE020077A008 /* DeviceDiscovery.m */,
@@ -206,6 +209,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7E6708AB223DB5C700D182C2 /* MessageType.h in Sources */,
 				7E0F4AB4222C810A00C0C57E /* Utilities.swift in Sources */,
 				7E0F4AB6222CAD2700C0C57E /* SidebarOutlineView.swift in Sources */,
 				7E2E04DB2239EE020077A008 /* DeviceDiscovery.m in Sources */,

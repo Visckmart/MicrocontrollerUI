@@ -7,13 +7,14 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "MessageType.h"
 
 #ifndef HelperFunctions_ObjC_h
 #define HelperFunctions_ObjC_h
 
 @interface Helper : NSObject
 + (NSArray *) filterFilenames:(NSArray *) stringArray;
-+ (NSAttributedString *)formatAsSpecialMessage:(NSString *)rawString;
++ (NSAttributedString *)formatAsSpecialMessage:(NSString *)rawString withType:(MessageType)messageType;
 @end
 
 #endif /* HelperFunctions_ObjC_h */

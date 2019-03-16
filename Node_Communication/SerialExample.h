@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "MessageType.h"
 //#import "Node_Communication-Swift.h"
 // import IOKit headers
 #include <IOKit/IOKitLib.h>
@@ -16,11 +17,13 @@
 #include <sys/ioctl.h>
 
 @protocol Writes;
+
 typedef NS_ENUM(NSInteger, CommandType) {
     none = 0,
     readingFiles,
     common
 };
+
 @interface SerialExample : NSObject {
 	IBOutlet NSPopUpButton *serialListPullDown;
 	IBOutlet NSTextView *serialOutputArea;
@@ -28,7 +31,6 @@ typedef NS_ENUM(NSInteger, CommandType) {
 	IBOutlet NSTextField *baudInputField;
 	int serialFileDescriptor; // file handle to the serial port
 	struct termios gOriginalTTYAttrs; // Hold the original termios attributes so we can reset them on quit ( best practice )
-	bool readThreadRunning;
 	NSTextStorage *storage;
     NSThread * bg;
 //    bool readingFiles;
@@ -39,9 +41,10 @@ typedef NS_ENUM(NSInteger, CommandType) {
     BOOL preparingToReadCommand;
     BOOL accumulatingResponse;
 }
+@property (atomic) BOOL readThreadRunning;
 @property (weak) id <Writes> interface;
 - (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType;
-- (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType andMessage:(NSString *)message;
+- (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType andMessage:(NSString *)message withMessageType:(MessageType)messageType;
 typedef NSString Program;
 - (Program *) prepareProgram: (NSString *)programName withData:(NSDictionary *) dataDict;
 - (void) prepare;
