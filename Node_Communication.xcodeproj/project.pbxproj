@@ -14,6 +14,7 @@
 		7E2E04DB2239EE020077A008 /* DeviceDiscovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E2E04DA2239EE020077A008 /* DeviceDiscovery.m */; };
 		7E4844FF22321AEE00A24055 /* HelperFunctions-ObjC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E4844FE22321AEE00A24055 /* HelperFunctions-ObjC.m */; };
 		7E6708AB223DB5C700D182C2 /* MessageType.h in Sources */ = {isa = PBXBuildFile; fileRef = 7E6708AA223DB5C700D182C2 /* MessageType.h */; };
+		7E6708AD223DBBE700D182C2 /* ViewController+Console.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E6708AC223DBBE700D182C2 /* ViewController+Console.swift */; };
 		7E81C127222B5C1D001FCAC7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C126222B5C1D001FCAC7 /* AppDelegate.swift */; };
 		7E81C129222B5C1D001FCAC7 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C128222B5C1D001FCAC7 /* ViewController.swift */; };
 		7E81C12B222B5C1F001FCAC7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7E81C12A222B5C1F001FCAC7 /* Assets.xcassets */; };
@@ -34,6 +35,7 @@
 		7E4844FE22321AEE00A24055 /* HelperFunctions-ObjC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "HelperFunctions-ObjC.m"; sourceTree = "<group>"; };
 		7E48450122321D7800A24055 /* HelperFunctions-ObjC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HelperFunctions-ObjC.h"; sourceTree = "<group>"; };
 		7E6708AA223DB5C700D182C2 /* MessageType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MessageType.h; sourceTree = "<group>"; };
+		7E6708AC223DBBE700D182C2 /* ViewController+Console.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+Console.swift"; sourceTree = "<group>"; };
 		7E81C123222B5C1D001FCAC7 /* Node_Communication.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Node_Communication.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E81C126222B5C1D001FCAC7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7E81C128222B5C1D001FCAC7 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -124,6 +126,7 @@
 			children = (
 				7E81C13A222B7F03001FCAC7 /* WindowController.swift */,
 				7E81C128222B5C1D001FCAC7 /* ViewController.swift */,
+				7E6708AC223DBBE700D182C2 /* ViewController+Console.swift */,
 				7E2E04DC223A020A0077A008 /* Serial */,
 				7E2E04DF223A027A0077A008 /* Utilities */,
 				7E81C13C222B942A001FCAC7 /* InterfaceProtocol.swift */,
@@ -217,6 +220,7 @@
 				7E2E04D62239DCF60077A008 /* DeviceIntegration.m in Sources */,
 				7E81C13B222B7F03001FCAC7 /* WindowController.swift in Sources */,
 				7E81C127222B5C1D001FCAC7 /* AppDelegate.swift in Sources */,
+				7E6708AD223DBBE700D182C2 /* ViewController+Console.swift in Sources */,
 				7E4844FF22321AEE00A24055 /* HelperFunctions-ObjC.m in Sources */,
 				7E81C13D222B942A001FCAC7 /* InterfaceProtocol.swift in Sources */,
 				7E81C139222B5C36001FCAC7 /* SerialExample.m in Sources */,

@@ -13,7 +13,5 @@ import Foundation
     func log(string: String)
     func log(attributedString: NSAttributedString)
     func checkIfCanRunCommand() -> Bool
-    func stopReading()
-    func updateConnectionStatus(connected: Bool)
     var files: [String] { get set }
 }

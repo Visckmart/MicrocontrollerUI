@@ -12,13 +12,6 @@
 @implementation DeviceIntegration : NSObject
 
 /**
- Restarts the connected device.
- */
-- (void) restart {
-    [self.serial writeString:@"node.restart()"];
-}
-
-/**
  Runs a file on the connected device using 'dofile(filename)'.
  
  @param fileName The full name of the file to be run.
@@ -38,6 +31,13 @@
 - (void) readFiles {
     NSString * command = @"for name in pairs(file.list()) do print(name) end";
     [self.serial runCommand:command withIdentifier:readingFiles andMessage:@"Update files list" withMessageType:MessageType_Common];
+}
+
+/**
+ Restarts the connected device.
+ */
+- (void) restart {
+    [self.serial writeString:@"node.restart()"];
 }
 
 typedef NSString Program;

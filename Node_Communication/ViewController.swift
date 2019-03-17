@@ -37,14 +37,16 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         didSet {
             DispatchQueue.main.async {
                 let connectionState = self.isConnected
+                
                 self.uploadButton.isEnabled = connectionState
                 self.commandTextfield.isEnabled = connectionState
                 self.sendButton.isEnabled = connectionState
+                self.connectButton.title = connectionState ? "Close" : "Open"
                 self.checkFileRefresh()
             }
         }
     }
-    private var consoleTextStorage: NSTextStorage {
+    var consoleTextStorage: NSTextStorage {
         get {
             return (consoleTextView.documentView as! NSTextView).textStorage!
         }
@@ -106,10 +108,9 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     func checkFileRefresh() {
         /* TODO: Poderia melhorar se guardasse o arquivo original
          e comparasse com o atual usando Data.isEqual(to other: Data). */
+        
         guard let lastUploadedFile = lastUploadedFile else { return }
-//        print("Checking \(lastUploadedFile.path)");
         let currentModifDate = try? getLastModifiedDate(ofFile: lastUploadedFile.url.path)
-        print(lastUploadedFile.lastModified, currentModifDate as Any)
         if lastUploadedFile.lastModified < currentModifDate!! {
             refreshUploadButton.isEnabled = true
             self.refreshUploadText.stringValue = "Reupload \"\(lastUploadedFile.url.lastPathComponent)\" with it's latest changes."
@@ -160,13 +161,6 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     @IBAction func serialListAction(_ sender: Any) {
 //        print(connectionsList.selectedItem?.title)
     }
-    lazy var dq: Thread = {
-        return Thread(target: serial, selector: #selector(serial.incomingTextUpdate(_:)), object: nil)
-    }()
-    
-    func stopReading() {
-        dq.cancel()
-    }
     
     @IBAction func connectButtonClicked(_ sender: NSButton) {
         if isConnected == false {
@@ -190,9 +184,6 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
                     deviceControl.readFiles()
                 }
                 else { canWrite = true }
-                dq.start()
-//                dq.add
-//                serial.performSelector(inBackground: #selector(serial.incomingTextUpdate(_:)), with: Thread.main)
                 
                 print("Favorite: \(favoriteDevice ?? "no favorite")")
                 favoriteDevice = item
@@ -201,73 +192,44 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         } else {
             print("Would try to disconnect.")
             serial.closeSerialPort()
-            dq = Thread(target: serial, selector: #selector(serial.incomingTextUpdate(_:)), object: nil)
+            isConnected = false
         }
     }
     
     // MARK: Writes protocol
     
     var canWrite = false
-    func checkIfCanRunCommand() -> Bool {
-//        print("Console text: \(consoleTextStorage.string)")
-        let regex = try! NSRegularExpression(pattern: "\\n> $", options: [])
-        print("Matches: ",regex.matches(in: consoleTextStorage.string, options: [], range: NSRange(location: 0, length: consoleTextStorage.string.count) ))
-        return true
-    }
+        
+//    func updateConnectionStatus(connected: Bool) {
+//        self.isConnected = connected
+//        if connected {
+//            connectButton.title = "Close"
+//        } else {
+//            connectButton.title = "Open"
+//        }
+//    }
     
-    func log(string: String) {
-        log(attributedString: NSAttributedString(string: string))
-    }
-    
-    func log(attributedString: NSAttributedString) {
-        let newString = NSMutableAttributedString(attributedString: attributedString)
-        if newString.string.contains("NodeMCU") {
-            canWrite = true
-            guard let firstIndexOfN = newString.string.firstIndex(of: "N") else {
-                return
-            }
-            let partitionedString = newString.string.suffix(from: firstIndexOfN)
-            newString.mutableString.setString(String(partitionedString))
-        }
-        if canWrite {
-            consoleTextStorage.append(newString)
-            let visibleRect = consoleTextView.documentVisibleRect
-            let bottomOfVisibleRect = visibleRect.origin.y + visibleRect.size.height
-            if bottomOfVisibleRect == consoleTextView.documentView?.bounds.height {
-                (consoleTextView.documentView as! NSTextView).scrollToEndOfDocument(self)
-            }
-        }
-    }
-    
-    func updateConnectionStatus(connected: Bool) {
-        self.isConnected = connected
-        if connected {
-            connectButton.title = "Close"
-        } else {
-            connectButton.title = "Open"
+    func uploadProcedure(fileURL: URL) {
+        print("Panel URL: \(String(describing: fileURL))")
+        self.serial.write("print('Will upload file \(fileURL.lastPathComponent)')")
+        self.deviceControl.uploadFile(fileURL)
+        
+        // TODO: Improve with Swift 5
+        if let lastModif = try? getLastModifiedDate(ofFile: fileURL.path) {
+            self.lastUploadedFile = (url: fileURL, lastModified: lastModif!)
+            self.refreshUploadText.stringValue = "This button allows you to reupload the most recent file if changes were made."
         }
     }
     
     @IBAction func uploadButtonClicked(_ sender: Any) {
         let panel = NSOpenPanel()
         panel.begin { (response) in
-            if response == .OK {
-                print("Panel URL: \(String(describing: panel.url))")
-                if let fileURL = panel.url {
-//                    self.serial.write("print('Would upload file \(fileURL.lastPathComponent)')")
-                    self.deviceControl.uploadFile(fileURL)
-                    
-                    // TODO: Improve with Swift 5
-                    if let lastModif = try? getLastModifiedDate(ofFile: fileURL.path) {
-                        self.lastUploadedFile = (url: fileURL, lastModified: lastModif!)
-                        self.refreshUploadText.stringValue = "This button allows you to reupload the most recent file if changes were made."
-                    }
-                }
+            if response == .OK, let chosenFileURL = panel.url {
+                self.uploadProcedure(fileURL: chosenFileURL)
             } else if response == NSApplication.ModalResponse.cancel {
                 print("cancelled")
             }
         }
-//        serial.uploadFile(URL(fileURLWithPath: "abcd"))
     }
     
     @IBAction func refreshLastUpload(_ sender: Any) {
@@ -300,18 +262,10 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
             } else if historyState > commands.count - 1 {
                 historyState = commands.count - 1
             }
-//            switch historyState {
-//            case ..<(-1):
-//                historyState = -1
-//            case commands.count...:
-//                historyState = commands.count - 1
-//            default: break
-//            }
         }
     }
     
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-//        print(commandSelector)
         // Se o comando foi seta pra cima ou pra baixo
         if commandSelector == moveUpSelector || commandSelector == moveDownSelector {
             switch commandSelector {

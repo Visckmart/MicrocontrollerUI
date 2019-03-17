@@ -38,14 +38,6 @@
     return self;
 }
 
-//- (NSArray<NSString *> *) getNamesOfConnectedDevices {
-//    return self.nameList;
-//}
-//
-//- (NSArray<NSString *> *) getPathsOfConnectedDevices {
-//    return self.pathList;
-//}
-
 /**
  Returns the device path from it's name.
 

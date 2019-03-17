@@ -25,45 +25,26 @@ typedef NS_ENUM(NSInteger, CommandType) {
 };
 
 @interface SerialExample : NSObject {
-	IBOutlet NSPopUpButton *serialListPullDown;
-	IBOutlet NSTextView *serialOutputArea;
-	IBOutlet NSTextField *serialInputField;
-	IBOutlet NSTextField *baudInputField;
-	int serialFileDescriptor; // file handle to the serial port
 	struct termios gOriginalTTYAttrs; // Hold the original termios attributes so we can reset them on quit ( best practice )
-	NSTextStorage *storage;
     NSThread * bg;
-//    bool readingFiles;
     NSString * filesOutput;
-    NSMutableArray * commandQueue;
     CommandType commandRunning;
     __block NSMutableString * responseAccumulator;
+    BOOL readThreadRunning;
     BOOL preparingToReadCommand;
     BOOL accumulatingResponse;
 }
-@property (atomic) BOOL readThreadRunning;
 @property (weak) id <Writes> interface;
-- (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType;
-- (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType andMessage:(NSString *)message withMessageType:(MessageType)messageType;
-typedef NSString Program;
-- (Program *) prepareProgram: (NSString *)programName withData:(NSDictionary *) dataDict;
+@property (atomic) int serialFileDescriptor; // file handle to the serial port
 - (void) prepare;
-//- (void) uploadFile:(NSURL *)filePath;
-- (void) closeSerialPort;
 - (NSString *) openSerialPort: (NSString *)serialPortFile baud: (speed_t)baudRate;
-//- (void)appendToIncomingText: (id) text;
-- (void)incomingTextUpdateThread: (NSThread *) parentThread;
-//- (NSArray *) refreshSerialList;
-- (void) writeString: (NSString *) str;
-//- (void) writeByte: (uint8_t *) val;
-//- (IBAction) serialPortSelected: (id) cntrl;
-//- (IBAction) baudAction: (id) cntrl;
-//- (IBAction) refreshAction: (id) cntrl;
-//- (IBAction) sendText: (id) cntrl;
-//- (IBAction) sliderChange: (NSSlider *) sldr;
-//- (IBAction) hitAButton: (NSButton *) btn;
-//- (IBAction) hitBButton: (NSButton *) btn;
-//- (IBAction) hitCButton: (NSButton *) btn;
-- (IBAction) resetButton: (NSButton *) btn;
+- (void) closeSerialPort;
+- (void)runCommand:(NSString *)rawCommand withIdentifier:(CommandType)cmdType;
+- (void)runCommand:(NSString *)rawCommand withIdentifier:(CommandType)cmdType
+        andMessage:(NSString *)message withMessageType:(MessageType)messageType;
+typedef NSString Program;
+- (Program *) prepareProgram:(NSString *)programName withData:(NSDictionary *) dataDict;
+- (void) writeString:(NSString *) str;
+//- (IBAction) resetButton: (NSButton *) btn;
 
 @end

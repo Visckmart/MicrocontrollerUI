@@ -17,10 +17,11 @@
  */
 @interface DeviceIntegration : NSObject
 @property (weak) SerialExample * serial;
-- (void) uploadFile:(NSURL *)filePath;
+
 - (void) runFile: (NSString *) fileName;
 - (void) readFiles;
 - (void) restart;
+- (void) uploadFile:(NSURL *)filePath;
 @end
 
 

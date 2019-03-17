@@ -18,16 +18,13 @@ NSString *const EndOfTextChar = @"";
 // executes after everything in the xib/nib is initiallized
 - (void)prepare {
 	// we don't have a serial port open yet
-	serialFileDescriptor = -1;
-	self.readThreadRunning = FALSE;
-    [self addObserver:self forKeyPath:@"readThreadRunning" options:NSKeyValueObservingOptionInitial context:NULL];
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
-    if ([keyPath isEqualToString:@"readThreadRunning"]) {
-        self.interface.isConnected = self.readThreadRunning;
-        NSLog(@"Read thread changed to: %s", self.readThreadRunning ? "Running" : "Not running");
-    }
+	self.serialFileDescriptor = -1;
+	readThreadRunning = FALSE;
+    [self addObserver:self forKeyPath:@"readThreadRunning"
+              options:NSKeyValueObservingOptionInitial context:NULL];
+    bg = [[NSThread alloc] initWithTarget:self
+                                 selector:@selector(incomingTextUpdateThread:)
+                                   object:nil];
 }
 // open the serial port
 //   - nil is returned on success
@@ -36,12 +33,12 @@ NSString *const EndOfTextChar = @"";
 	int success;
 	
 	// close the port if it is already open
-	if (serialFileDescriptor != -1) {
-		close(serialFileDescriptor);
-		serialFileDescriptor = -1;
+	if (self.serialFileDescriptor != -1) {
+		close(self.serialFileDescriptor);
+		self.serialFileDescriptor = -1;
 		
 		// wait for the reading thread to die
-		while(self.readThreadRunning);
+		while(readThreadRunning);
 		
 		// re-opening the same port REALLY fast will fail spectacularly... better to sleep a sec
 		sleep(0.5);
@@ -62,24 +59,24 @@ NSString *const EndOfTextChar = @"";
 	// open the port
 	//     O_NONBLOCK causes the port to open without any delay (we'll block with another call)
     
-	serialFileDescriptor = open(bsdPath, O_RDWR | O_NOCTTY | O_NONBLOCK );
+	self.serialFileDescriptor = open(bsdPath, O_RDWR | O_NOCTTY | O_NONBLOCK );
 	
-	if (serialFileDescriptor == -1) {
+	if (self.serialFileDescriptor == -1) {
 		// check if the port opened correctly
 		errorMessage = @"Couldn't open serial port";
 	} else {
 		// TIOCEXCL causes blocking of non-root processes on this serial-port
-		success = ioctl(serialFileDescriptor, TIOCEXCL);
+		success = ioctl(self.serialFileDescriptor, TIOCEXCL);
 		if ( success == -1) {
 			errorMessage = @"Couldn't obtain lock on serial port";
 		} else {
-			success = fcntl(serialFileDescriptor, F_SETFL, 0);
+			success = fcntl(self.serialFileDescriptor, F_SETFL, 0);
 			if ( success == -1) {
 				// clear the O_NONBLOCK flag; all calls from here on out are blocking for non-root processes
 				errorMessage = @"Couldn't obtain lock on serial port";
 			} else {
 				// Get the current options and save them so we can restore the default settings later.
-				success = tcgetattr(serialFileDescriptor, &gOriginalTTYAttrs);
+				success = tcgetattr(self.serialFileDescriptor, &gOriginalTTYAttrs);
 				if ( success == -1) {
 					errorMessage = @"Couldn't get serial attributes";
 				} else {
@@ -98,17 +95,17 @@ NSString *const EndOfTextChar = @"";
 					cfmakeraw(&options);
 					
 					// set tty attributes (raw-mode in this case)
-					success = tcsetattr(serialFileDescriptor, TCSANOW, &options);
+					success = tcsetattr(self.serialFileDescriptor, TCSANOW, &options);
 					if ( success == -1) {
 						errorMessage = @"Coudln't set serial attributes";
 					} else {
 						// Set baud rate (any arbitrary baud rate can be set this way)
-						success = ioctl(serialFileDescriptor, IOSSIOSPEED, &baudRate);
+						success = ioctl(self.serialFileDescriptor, IOSSIOSPEED, &baudRate);
 						if ( success == -1) {
 							errorMessage = @"Baud Rate out of bounds";
 						} else {
 							// Set the receive latency (a.k.a. don't wait to buffer data)
-							success = ioctl(serialFileDescriptor, IOSSDATALAT, &mics);
+							success = ioctl(self.serialFileDescriptor, IOSSDATALAT, &mics);
 							if ( success == -1) {
 								errorMessage = @"Couldn't set serial latency";
 							}
@@ -120,31 +117,30 @@ NSString *const EndOfTextChar = @"";
 	}
 	
 	// make sure the port is closed if a problem happens
-	if ((serialFileDescriptor == -1) && (errorMessage == nil)) {
-		close(serialFileDescriptor);
-		serialFileDescriptor = -1;
+	if ((self.serialFileDescriptor == -1) && (errorMessage == nil)) {
+		close(self.serialFileDescriptor);
+		self.serialFileDescriptor = -1;
         [self.interface logWithString:@"Connection error."];
-//        [_interface updateConnectionStatusWithConnected: NO];
     } else {
+        readThreadRunning = YES;
         [self.interface logWithString:@"Successfully connected!"];
-//        [_interface updateConnectionStatusWithConnected: YES];
+        [bg start];
     }
     
 	return errorMessage;
 }
 
 - (void) closeSerialPort {
-    self.readThreadRunning = FALSE;
-    if (serialFileDescriptor != -1) {
-        self.readThreadRunning = FALSE;
-//        fflush(serialFileDescriptor);
-        [self.interface stopReading];
-        close(serialFileDescriptor);
-        serialFileDescriptor = -1;
+    if (fcntl(self.serialFileDescriptor, F_GETFL) != -1 || errno != EBADF) {
+        readThreadRunning = NO;
+        bg = [[NSThread alloc] initWithTarget:self
+                                     selector:@selector(incomingTextUpdateThread:)
+                                       object:nil];
+        close(self.serialFileDescriptor);
+        self.serialFileDescriptor = -1;
         [self.interface logWithAttributedString:[Helper formatAsSpecialMessage:@"Serial port closed" withType:MessageType_Important]];
     }
-    NSLog(@"is thread running %d", self.readThreadRunning);
-    //    [_interface updateConnectionStatusWithConnected: NO];
+    NSLog(@"is thread running %d", readThreadRunning);
 }
 
 - (void)treatCommandResponse:(NSString *)response withCompletionBlock:(void (^)(NSString *))completionBlock {
@@ -202,7 +198,7 @@ NSString *const EndOfTextChar = @"";
 - (void)incomingTextUpdateThread: (NSThread *) parentThread {
 	
 	// mark that the thread is running
-	self.readThreadRunning = TRUE;
+	readThreadRunning = YES;
 	const int BUFFER_SIZE = 100;
 	char byte_buffer[BUFFER_SIZE]; // buffer for holding incoming data
 	long numBytes=0; // number of bytes read during read
@@ -214,76 +210,67 @@ NSString *const EndOfTextChar = @"";
     
     int result;
     fd_set readset;
+    [self addObserver:self forKeyPath:@"readThreadRunning"
+              options:NSKeyValueObservingOptionInitial context:NULL];
     
     // assign a high priority to this thread
 	[NSThread setThreadPriority:1.0];
 	
 	// this will loop unitl the serial port closes
-	while(self.readThreadRunning) {
-//        NSLog(@"%@", self.readThreadRunning ? @"running" : @"stopped");
-        
-//        if (serialFileDescriptor == -1) { break; }
-		// read() blocks until some data is available or the port is closed
+	while(readThreadRunning) {
         FD_ZERO(&readset);
-        FD_SET(serialFileDescriptor, &readset);
-        result = select(serialFileDescriptor + 1, &readset, NULL, NULL, NULL);
-        if (result > 0) {
-            if (FD_ISSET(serialFileDescriptor, &readset)) {
-                /* The socket_fd has data available to be read */
-                numBytes = read(serialFileDescriptor, byte_buffer, BUFFER_SIZE); // read up to the size of the buffer
-                if(numBytes>0) {
-                    // create an NSString from the incoming bytes (the bytes aren't null terminated)
-                    text = [NSString stringWithCString:byte_buffer length:numBytes];
-                    //            NSLog(@"incoming: %@", text);
-                    //                NSLog(@"-\n%@\n-", text);
-                    [self treatCommandResponse:text withCompletionBlock:^(NSString * response) {
-                        switch (self->commandRunning) {
-                            case readingFiles:
-                            {
-                                NSArray * fileNames = [Helper filterFilenames:[response componentsSeparatedByString:@"\n"]];
-                                dispatch_async(dispatch_get_main_queue(), ^{
-                                    self.interface.files = fileNames;
-                                });
-                                NSRange end = [response rangeOfString:EndOfTextChar options:NSBackwardsSearch];
-                                dispatch_async(dispatch_get_main_queue(), ^{
-                                    [self.interface logWithString:[response substringFromIndex:end.location]];
-                                    self->responseAccumulator = nil;
-                                });
-                                break;
-                            }
-                            default:
-                            {
-                                dispatch_async(dispatch_get_main_queue(), ^{
-                                    [self.interface logWithString:response];
-                                    //                            self->responseAccumulator = nil;
-                                });
-                                break;
-                            }
+        FD_SET(self.serialFileDescriptor, &readset);
+        result = select(self.serialFileDescriptor + 1, &readset, NULL, NULL, NULL);
+        if (result > 0 && FD_ISSET(self.serialFileDescriptor, &readset)) {
+            /* The socket_fd has data available to be read */
+            // read up to the size of the buffer
+            numBytes = read(self.serialFileDescriptor, byte_buffer, BUFFER_SIZE);
+            if(numBytes>0) {
+                // create an NSString from the incoming bytes (the bytes aren't null terminated)
+                text = [NSString stringWithCString:byte_buffer length:numBytes];
+                //            NSLog(@"incoming: %@", text);
+                //                NSLog(@"-\n%@\n-", text);
+                [self treatCommandResponse:text withCompletionBlock:^(NSString * response) {
+                    switch (self->commandRunning) {
+                        case readingFiles:
+                        {
+                            NSArray * fileNames = [Helper filterFilenames:[response componentsSeparatedByString:@"\n"]];
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                self.interface.files = fileNames;
+                            });
+                            NSRange end = [response rangeOfString:EndOfTextChar options:NSBackwardsSearch];
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [self.interface logWithString:[response substringFromIndex:end.location]];
+                                self->responseAccumulator = nil;
+                            });
+                            break;
                         }
-                    }];
-                }
+                        default:
+                        {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [self.interface logWithString:response];
+                            });
+                            break;
+                        }
+                    }
+                }];
             }
         } else {
             break; // Stop the thread if there is an error
         }
     }
 	
-	// make sure the serial port is closed
-	if (serialFileDescriptor != -1) {
-		close(serialFileDescriptor);
-		serialFileDescriptor = -1;
-	}
-	
-	// mark that the thread has quit
-	self.readThreadRunning = FALSE;
+    NSLog(@"serial file descriptor: %d", _serialFileDescriptor);
+    [self closeSerialPort];
 }
 
 - (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType {
-    [self runCommand:rawCommand withIdentifier:cmdType andMessage:NULL withMessageType:MessageType_Common];
+    [self runCommand:rawCommand withIdentifier:cmdType
+          andMessage:NULL withMessageType:MessageType_Common];
 }
 
 - (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType andMessage:(NSString *)message withMessageType:(MessageType)messageType {
-    NSLog(@"%hhd", [self.interface checkIfCanRunCommand]);
+    if ([self.interface checkIfCanRunCommand] == NO) { return; }
     if (message != NULL) {
         [self.interface logWithAttributedString:[Helper formatAsSpecialMessage:message withType:messageType]];
     }
@@ -293,7 +280,6 @@ NSString *const EndOfTextChar = @"";
                             @"control end":EndOfTextChar};
     Program * wrappedCommand = [self prepareProgram:@"CommandWrapper" withData:dict];
     [self writeString:wrappedCommand];
-//    [self runCommand:rawCommand withIdentifier:cmdType];
 }
 
 - (Program *) prepareProgram: (NSString *)programName withData:(NSDictionary *) dataDict {
@@ -325,25 +311,31 @@ NSString *const EndOfTextChar = @"";
 
 // send a string to the serial port
 - (void) writeString: (NSString *) str {
-//    if(serialFileDescriptor!=-1) {
+    if(self.serialFileDescriptor!=-1) {
         NSString * temp = [str stringByAppendingString:[NSString stringWithFormat:@"%c%c", 13, 10]];
-        NSLog(@"%s", [temp cStringUsingEncoding:NSASCIIStringEncoding]);
-		write(serialFileDescriptor, [temp cStringUsingEncoding:NSASCIIStringEncoding], [temp length]);
-//        sleep(1);
-//    } else {
-//        // make sure the user knows they should select a serial port
-//        [self.interface logWithString:@"\n ERROR:  Select a Serial Port from the pull-down menu"];
-//    }
+//        NSLog(@"%s", [temp cStringUsingEncoding:NSASCIIStringEncoding]);
+		write(self.serialFileDescriptor, [temp cStringUsingEncoding:NSASCIIStringEncoding], [temp length]);
+    } else {
+        // make sure the user knows they should select a serial port
+        [self.interface logWithString:@"\n ERROR:  Select a Serial Port from the pull-down menu"];
+    }
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    if ([keyPath isEqualToString:@"readThreadRunning"]) {
+        self.interface.isConnected = readThreadRunning;
+        NSLog(@"Read thread changed to: %s", readThreadRunning ? "Running" : "Not running");
+    }
 }
 
 // action from the reset button
 - (IBAction) resetButton: (NSButton *) btn {
 	// set and clear DTR to reset an arduino
 	struct timespec interval = {0,100000000}, remainder;
-	if(serialFileDescriptor!=-1) {
-		ioctl(serialFileDescriptor, TIOCSDTR);
+	if(self.serialFileDescriptor!=-1) {
+		ioctl(self.serialFileDescriptor, TIOCSDTR);
 		nanosleep(&interval, &remainder); // wait 0.1 seconds
-		ioctl(serialFileDescriptor, TIOCCDTR);
+		ioctl(self.serialFileDescriptor, TIOCCDTR);
 	}
 }
 
