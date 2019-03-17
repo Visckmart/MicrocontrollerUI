@@ -43,6 +43,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
                 self.sendButton.isEnabled = connectionState
                 self.connectButton.title = connectionState ? "Close" : "Open"
                 self.checkFileRefresh()
+                self.view.window!.makeFirstResponder(connectionState ?self.commandTextfield : self.sendButton)
             }
         }
     }
@@ -60,6 +61,8 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
             UserDefaults.standard.set(newFavorite, forKey: "favorite")
         }
     }
+    
+    var shouldUseAlternativeAction = false
     
     var files: [String] = [] {
         didSet {
@@ -188,26 +191,26 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
                 print("Favorite: \(favoriteDevice ?? "no favorite")")
                 favoriteDevice = item
                 isConnected = true
+//                commandTextfield.isEnabled = false
+//                commandTextfield.isEnabled = true
+//                commandTextfield.window!.makeFirstResponder(commandTextfield)
+//                sender.resignFirstResponder()
             }
         } else {
-            print("Would try to disconnect.")
-            serial.closeSerialPort()
-            isConnected = false
+            if shouldUseAlternativeAction {
+                print("Would try to restart.")
+                deviceControl.restart()
+            } else {
+                print("Would try to disconnect.")
+                serial.closeSerialPort()
+                isConnected = false
+            }
         }
     }
     
     // MARK: Writes protocol
     
     var canWrite = false
-        
-//    func updateConnectionStatus(connected: Bool) {
-//        self.isConnected = connected
-//        if connected {
-//            connectButton.title = "Close"
-//        } else {
-//            connectButton.title = "Open"
-//        }
-//    }
     
     func uploadProcedure(fileURL: URL) {
         print("Panel URL: \(String(describing: fileURL))")
@@ -247,32 +250,60 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     
     // MARK: - Commands Area
     
+    func controlTextDidChange(_ obj: Notification) {
+        guard let textField = obj.object as? NSTextField,
+            textField == commandTextfield else { return }
+        if commands.count == 0 {
+            commands.append(textField.stringValue)
+        } else {
+            commands[0] = textField.stringValue
+        }
+    }
+    
     @IBAction func sendButtonClicked(_ sender: Any) {
         serial.write(commandTextfield.stringValue)
-        commands.insert(commandTextfield.stringValue, at: 0)
+        commands.insert("", at: 0)
         commandTextfield.stringValue = ""
-        historyState = -1
+        historyState = 0
     }
     
     var commands: [String] = []
-    var historyState = -1 {
+    var historyState = 0 {
         didSet {
             if historyState < -1 {
                 historyState = -1
-            } else if historyState > commands.count - 1 {
-                historyState = commands.count - 1
+            } else if historyState > commands.count-1 {
+                historyState = commands.count-1
             }
         }
     }
     
+    func altIsPressed(status: Bool) {
+        shouldUseAlternativeAction = status
+        if status == true && isConnected {
+            connectButton.title = "Restart"
+        } else {
+            connectButton.title = isConnected ? "Close" : "Open"
+        }
+    }
+    
+    // TODO: Checar essa parte para ver se realmente está funcionando como deveria
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+        guard control == commandTextfield else { return false }
         // Se o comando foi seta pra cima ou pra baixo
         if commandSelector == moveUpSelector || commandSelector == moveDownSelector {
+            if historyState == 0 {
+                if commands[0] != commandTextfield.stringValue {
+                    commands.insert(commandTextfield.stringValue, at: 0)
+                }
+            }
             switch commandSelector {
             case moveUpSelector:    historyState += 1
             case moveDownSelector:  historyState -= 1
             default: return false
             }
+            print("Commands \(commands.count) / state \(historyState)")
+            print(commands)
             if historyState < 0 {
                 commandTextfield.stringValue = ""
             } else {

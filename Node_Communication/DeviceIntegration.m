@@ -37,7 +37,7 @@
  Restarts the connected device.
  */
 - (void) restart {
-    [self.serial writeString:@"node.restart()"];
+    [self.serial runCommand:@"node.restart()" withIdentifier:common andMessage:@"Restarting" withMessageType:MessageType_Common];
 }
 
 typedef NSString Program;

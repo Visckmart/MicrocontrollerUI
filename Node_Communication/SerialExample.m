@@ -117,7 +117,7 @@ NSString *const EndOfTextChar = @"";
 	}
 	
 	// make sure the port is closed if a problem happens
-	if ((self.serialFileDescriptor == -1) && (errorMessage == nil)) {
+	if ((self.serialFileDescriptor == -1) && (errorMessage != nil)) {
 		close(self.serialFileDescriptor);
 		self.serialFileDescriptor = -1;
         [self.interface logWithString:@"Connection error."];
@@ -138,7 +138,7 @@ NSString *const EndOfTextChar = @"";
                                        object:nil];
         close(self.serialFileDescriptor);
         self.serialFileDescriptor = -1;
-        [self.interface logWithAttributedString:[Helper formatAsSpecialMessage:@"Serial port closed" withType:MessageType_Important]];
+        [self.interface logWithAttributedString:[Helper formatAsSpecialMessage:@"Serial port closed\n" withType:MessageType_Important]];
     }
     NSLog(@"is thread running %d", readThreadRunning);
 }
