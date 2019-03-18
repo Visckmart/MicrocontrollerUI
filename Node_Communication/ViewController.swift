@@ -71,6 +71,8 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         }
     }
     
+    let history = CommandHistory()
+    
     let serial = SerialExample()
     let deviceControl = DeviceIntegration()
     let deviceDiscovery = DeviceDiscovery()
@@ -91,6 +93,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         sendButton.keyEquivalent = "\r"
         restartCheckbox.keyEquivalent = "r"
         sideBar.doubleAction = #selector(ViewController.doubleClickOnResultRow)
+        history.attatchedTextField = commandTextfield
     }
     
     // TODO: Passar essa função para a classe da side bar
@@ -262,29 +265,13 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     func controlTextDidChange(_ obj: Notification) {
         guard let textField = obj.object as? NSTextField,
             textField == commandTextfield else { return }
-        if commands.count == 0 {
-            commands.append(textField.stringValue)
-        } else {
-            commands[0] = textField.stringValue
-        }
+        history.updateMostRecentEntry()
     }
     
     @IBAction func sendButtonClicked(_ sender: Any) {
         serial.write(commandTextfield.stringValue)
-        commands.insert("", at: 0)
         commandTextfield.stringValue = ""
-        historyState = 0
-    }
-    
-    var commands: [String] = []
-    var historyState = 0 {
-        didSet {
-            if historyState < -1 {
-                historyState = -1
-            } else if historyState > commands.count-1 {
-                historyState = commands.count-1
-            }
-        }
+        history.pushAndResetPivot()
     }
     
     func altIsPressed(status: Bool) {
@@ -299,29 +286,14 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     // TODO: Checar essa parte para ver se realmente está funcionando como deveria
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
         guard control == commandTextfield else { return false }
-        // Se o comando foi seta pra cima ou pra baixo
-        if commandSelector == moveUpSelector || commandSelector == moveDownSelector {
-            if historyState == 0 {
-                if commands[0] != commandTextfield.stringValue {
-                    commands.insert(commandTextfield.stringValue, at: 0)
-                }
-            }
-            switch commandSelector {
-            case moveUpSelector:    historyState += 1
-            case moveDownSelector:  historyState -= 1
-            default: return false
-            }
-            print("Commands \(commands.count) / state \(historyState)")
-            print(commands)
-            if historyState < 0 {
-                commandTextfield.stringValue = ""
-            } else {
-                commandTextfield.stringValue = commands[historyState]
-            }
-            return true
-        } else {
-            return false
-        }
+        
+        let direction: CommandHistory.NavigationDirection
+        if commandSelector == moveUpSelector        { direction = .back }
+        else if commandSelector == moveDownSelector { direction = .forward }
+        else { return false }
+        
+        history.movePivot(to: direction)
+        return true
     }
 
 

@@ -23,6 +23,7 @@
 		7E81C13B222B7F03001FCAC7 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C13A222B7F03001FCAC7 /* WindowController.swift */; };
 		7E81C13D222B942A001FCAC7 /* InterfaceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C13C222B942A001FCAC7 /* InterfaceProtocol.swift */; };
 		7EA5B2D7222EFFFD001947B2 /* FileUpload_Start.lua in Resources */ = {isa = PBXBuildFile; fileRef = 7EA5B2D6222EFFFD001947B2 /* FileUpload_Start.lua */; };
+		7EFAB8A6223F509800A024F6 /* CommandHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EFAB8A5223F509800A024F6 /* CommandHistory.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +50,7 @@
 		7E81C13A222B7F03001FCAC7 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
 		7E81C13C222B942A001FCAC7 /* InterfaceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfaceProtocol.swift; sourceTree = "<group>"; };
 		7EA5B2D6222EFFFD001947B2 /* FileUpload_Start.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = FileUpload_Start.lua; sourceTree = "<group>"; };
+		7EFAB8A5223F509800A024F6 /* CommandHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandHistory.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +128,7 @@
 			children = (
 				7E81C13A222B7F03001FCAC7 /* WindowController.swift */,
 				7E81C128222B5C1D001FCAC7 /* ViewController.swift */,
+				7EFAB8A5223F509800A024F6 /* CommandHistory.swift */,
 				7E6708AC223DBBE700D182C2 /* ViewController+Console.swift */,
 				7E2E04DC223A020A0077A008 /* Serial */,
 				7E2E04DF223A027A0077A008 /* Utilities */,
@@ -220,6 +223,7 @@
 				7E2E04D62239DCF60077A008 /* DeviceIntegration.m in Sources */,
 				7E81C13B222B7F03001FCAC7 /* WindowController.swift in Sources */,
 				7E81C127222B5C1D001FCAC7 /* AppDelegate.swift in Sources */,
+				7EFAB8A6223F509800A024F6 /* CommandHistory.swift in Sources */,
 				7E6708AD223DBBE700D182C2 /* ViewController+Console.swift in Sources */,
 				7E4844FF22321AEE00A24055 /* HelperFunctions-ObjC.m in Sources */,
 				7E81C13D222B942A001FCAC7 /* InterfaceProtocol.swift in Sources */,
