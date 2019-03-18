@@ -18,11 +18,14 @@ class WindowController: NSWindowController, NSWindowDelegate {
     
         // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
     }
+    var optionIsPressed = false
     override var acceptsFirstResponder: Bool { return true }
     override func flagsChanged(with event: NSEvent) {
 //        print(event)
-        let optionPressed = NSEvent.modifierFlags.contains(.option)
-        viewController.altIsPressed(status: optionPressed)
+        if optionIsPressed != NSEvent.modifierFlags.contains(.option) {
+            optionIsPressed.toggle()
+            viewController.altIsPressed(status: optionIsPressed)
+        }
     }
     
     func windowDidResize(_ notification: Notification) {

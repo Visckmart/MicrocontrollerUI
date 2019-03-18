@@ -31,11 +31,15 @@ typedef NS_ENUM(NSInteger, CommandType) {
     CommandType commandRunning;
     __block NSMutableString * responseAccumulator;
     BOOL readThreadRunning;
-    BOOL preparingToReadCommand;
-    BOOL accumulatingResponse;
 }
-@property (weak) id <Writes> interface;
+@property (weak) NSObject <Writes> * interface;
 @property (atomic) int serialFileDescriptor; // file handle to the serial port
+@property (atomic) BOOL preparingToReadCommand;
+@property (atomic) BOOL accumulatingResponse;
+@property (atomic) BOOL canWrite;
+- (void)setWriteAvailability:(bool)status;
+@property (atomic) NSMutableArray * commandQueue;
+@property (atomic) NSMutableArray<NSNumber *> * commandTypeQueue;
 - (void) prepare;
 - (NSString *) openSerialPort: (NSString *)serialPortFile baud: (speed_t)baudRate;
 - (void) closeSerialPort;

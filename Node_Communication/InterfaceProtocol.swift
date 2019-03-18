@@ -12,6 +12,7 @@ import Foundation
     var isConnected: Bool { get set }
     func log(string: String)
     func log(attributedString: NSAttributedString)
+    var canRunCommand: Bool { get set }
     func checkIfCanRunCommand() -> Bool
     var files: [String] { get set }
 }

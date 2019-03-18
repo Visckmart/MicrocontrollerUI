@@ -45,6 +45,7 @@ extension ViewController {
                 if bottomOfVisibleRect == self.consoleTextView.documentView?.bounds.height {
                     (self.consoleTextView.documentView as! NSTextView).scrollToEndOfDocument(self)
                 }
+                self.canRunCommand = self.checkIfCanRunCommand()
             }
         }
     }

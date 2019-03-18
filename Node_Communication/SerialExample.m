@@ -22,9 +22,14 @@ NSString *const EndOfTextChar = @"";
 	readThreadRunning = FALSE;
     [self addObserver:self forKeyPath:@"readThreadRunning"
               options:NSKeyValueObservingOptionInitial context:NULL];
+//    [self addObserver:self.interface forKeyPath:@"canRunCommand"
+//              options:NSKeyValueObservingOptionInitial context:NULL];
     bg = [[NSThread alloc] initWithTarget:self
                                  selector:@selector(incomingTextUpdateThread:)
                                    object:nil];
+    self.canWrite = false;
+    self.commandQueue = [NSMutableArray new];
+    self.commandTypeQueue = [NSMutableArray new];
 }
 // open the serial port
 //   - nil is returned on success
@@ -150,13 +155,13 @@ NSString *const EndOfTextChar = @"";
     }
     NSRange start = [response rangeOfString:StartOfTextChar];
     NSRange end = [response rangeOfString:EndOfTextChar];
-    if (accumulatingResponse == NO) {
-        if (preparingToReadCommand == NO && start.location != NSNotFound) {
-            preparingToReadCommand = YES;
+    if (self.accumulatingResponse == NO) {
+        if (self.preparingToReadCommand == NO && start.location != NSNotFound) {
+            self.preparingToReadCommand = YES;
         }
-        if (preparingToReadCommand && end.location != NSNotFound) {
-            preparingToReadCommand = NO;
-            accumulatingResponse = YES;
+        if (self.preparingToReadCommand && end.location != NSNotFound) {
+            self.preparingToReadCommand = NO;
+            self.accumulatingResponse = YES;
             responseAccumulator = [NSMutableString string];
             NSRange rangeAfterHeader = NSMakeRange(end.location, [response length] - end.location);
             start = [response rangeOfString:StartOfTextChar options:0
@@ -172,8 +177,8 @@ NSString *const EndOfTextChar = @"";
             }
         }
     }
-    if (accumulatingResponse == YES && (preparingToReadCommand == NO || (start.location != NSNotFound))){
-        if (accumulatingResponse == YES && start.location == NSNotFound && end.location == NSNotFound) {
+    if (self.accumulatingResponse == YES && (self.preparingToReadCommand == NO || (start.location != NSNotFound))){
+        if (self.accumulatingResponse == YES && start.location == NSNotFound && end.location == NSNotFound) {
             [responseAccumulator appendString: response];
             return;
         }
@@ -187,12 +192,17 @@ NSString *const EndOfTextChar = @"";
             [responseAccumulator appendString: response];
             completionBlock([responseAccumulator copy]);
             responseAccumulator = nil;
-            accumulatingResponse = NO;
+            self.accumulatingResponse = NO;
             commandRunning = none;
         }
     }
 }
 
+
+- (void)setWriteAvailability:(bool)status {
+    NSLog(@"setWriteAvailability %d", status);
+    self.canWrite = status;
+}
 // This selector/function will be called as another thread...
 //  this thread will read from the serial port and exits when the port is closed
 - (void)incomingTextUpdateThread: (NSThread *) parentThread {
@@ -205,23 +215,39 @@ NSString *const EndOfTextChar = @"";
 	NSString *text; // incoming text from the serial port
     responseAccumulator = [NSMutableString string];
     
-    preparingToReadCommand = NO;
-    accumulatingResponse = NO;
+    self.preparingToReadCommand = NO;
+    self.accumulatingResponse = NO;
     
     int result;
     fd_set readset;
     [self addObserver:self forKeyPath:@"readThreadRunning"
               options:NSKeyValueObservingOptionInitial context:NULL];
+//    [self addObserver:self.interface forKeyPath:@"canRunCommand"
+//              options:NSKeyValueObservingOptionInitial context:NULL];
     
     // assign a high priority to this thread
 	[NSThread setThreadPriority:1.0];
+    struct timeval tv;
 	
 	// this will loop unitl the serial port closes
 	while(readThreadRunning) {
+        tv.tv_sec = 1;
+        tv.tv_usec = 0;
         FD_ZERO(&readset);
         FD_SET(self.serialFileDescriptor, &readset);
+        if (self.canWrite && commandRunning == none) {
+            NSLog(@"Would run");
+            if (self.commandQueue.count > 0) {
+                NSLog(@"Running now");
+                commandRunning = self.commandTypeQueue[0].intValue;
+                [self writeString:self.commandQueue[0]];
+            }
+        } else {
+            NSLog(@"Wouldn't run");
+        }
         result = select(self.serialFileDescriptor + 1, &readset, NULL, NULL, NULL);
-        if (result > 0 && FD_ISSET(self.serialFileDescriptor, &readset)) {
+        if (result > 0) {
+            if (FD_ISSET(self.serialFileDescriptor, &readset)) {
             /* The socket_fd has data available to be read */
             // read up to the size of the buffer
             numBytes = read(self.serialFileDescriptor, byte_buffer, BUFFER_SIZE);
@@ -258,6 +284,7 @@ NSString *const EndOfTextChar = @"";
         } else {
             break; // Stop the thread if there is an error
         }
+        }
     }
 	
     NSLog(@"serial file descriptor: %d", _serialFileDescriptor);
@@ -270,16 +297,23 @@ NSString *const EndOfTextChar = @"";
 }
 
 - (void)runCommand: (NSString *)rawCommand withIdentifier:(CommandType)cmdType andMessage:(NSString *)message withMessageType:(MessageType)messageType {
-    if ([self.interface checkIfCanRunCommand] == NO) { return; }
+//    if ([self.interface checkIfCanRunCommand] == NO) { return; }
     if (message != NULL) {
         [self.interface logWithAttributedString:[Helper formatAsSpecialMessage:message withType:messageType]];
     }
-    commandRunning = cmdType;
     NSDictionary * dict = @{@"control begin":StartOfTextChar,
                             @"command":rawCommand,
                             @"control end":EndOfTextChar};
     Program * wrappedCommand = [self prepareProgram:@"CommandWrapper" withData:dict];
-    [self writeString:wrappedCommand];
+    if (commandRunning == none) {
+        NSLog(@"Running command now");
+        commandRunning = cmdType;
+        [self writeString:wrappedCommand];
+    } else {
+        NSLog(@"Command added to the queue");
+        [self.commandQueue addObject:wrappedCommand];
+        [self.commandTypeQueue addObject:@(cmdType)];
+    }
 }
 
 - (Program *) prepareProgram: (NSString *)programName withData:(NSDictionary *) dataDict {
@@ -325,6 +359,8 @@ NSString *const EndOfTextChar = @"";
     if ([keyPath isEqualToString:@"readThreadRunning"]) {
         self.interface.isConnected = readThreadRunning;
         NSLog(@"Read thread changed to: %s", readThreadRunning ? "Running" : "Not running");
+    } else {
+        NSLog(@"OBSERVE %@ %@", keyPath, object);
     }
 }
 

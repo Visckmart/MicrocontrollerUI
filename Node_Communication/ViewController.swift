@@ -172,7 +172,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
                 print("No item selected")
                 return
             }
-            print("Will try to connect to \(deviceDiscovery.pathList[indexOfSelectedItem] as? String)")
+            print("Will try to connect to \(deviceDiscovery.pathList[indexOfSelectedItem] as! String)")
             let item = deviceDiscovery.pathList[indexOfSelectedItem] as! String
             let openingResponse = serial.openSerialPort(item, baud: speed_t(115200))
             if openingResponse != nil {
@@ -185,6 +185,8 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
                 if restartCheckbox.state == .on {
                     deviceControl.restart()
                     deviceControl.readFiles()
+//                    serial.write("node.restart()")
+//                    serial.runCommand("node.restart()", withIdentifier: .none)
                 }
                 else { canWrite = true }
                 
@@ -205,6 +207,13 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
                 serial.closeSerialPort()
                 isConnected = false
             }
+        }
+    }
+    
+    @objc dynamic var canRunCommand = false {
+        didSet {
+            serial.setWriteAvailability(canRunCommand)
+            print("canRunCommand \(canRunCommand)")
         }
     }
     
