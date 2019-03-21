@@ -10,6 +10,8 @@
 #import "Node_Communication-Swift.h"
 #include <sys/time.h>
 
+#define portErrorDomain @"com.visckmart.node_communication.portError"
+
 @implementation SerialExample
 
 NSString *const StartOfTextChar = @"";
@@ -34,7 +36,7 @@ NSString *const EndOfTextChar = @"";
 // open the serial port
 //   - nil is returned on success
 //   - an error message is returned otherwise
-- (NSString *)  openSerialPort: (NSString *)serialPortFile baud: (speed_t)baudRate {
+- (void)openSerialPort: (NSString *)serialPortFile baud: (speed_t)baudRate didFailWithError:(NSError **)error {
 	int success;
 	
 	// close the port if it is already open
@@ -60,6 +62,7 @@ NSString *const EndOfTextChar = @"";
 	
 	// error message string
 	NSString *errorMessage = nil;
+    int errorCode = -1;
 	
 	// open the port
 	//     O_NONBLOCK causes the port to open without any delay (we'll block with another call)
@@ -69,21 +72,25 @@ NSString *const EndOfTextChar = @"";
 	if (self.serialFileDescriptor == -1) {
 		// check if the port opened correctly
 		errorMessage = @"Couldn't open serial port";
+        errorCode = 1;
 	} else {
 		// TIOCEXCL causes blocking of non-root processes on this serial-port
 		success = ioctl(self.serialFileDescriptor, TIOCEXCL);
 		if ( success == -1) {
 			errorMessage = @"Couldn't obtain lock on serial port";
+            errorCode = 2;
 		} else {
 			success = fcntl(self.serialFileDescriptor, F_SETFL, 0);
 			if ( success == -1) {
 				// clear the O_NONBLOCK flag; all calls from here on out are blocking for non-root processes
 				errorMessage = @"Couldn't obtain lock on serial port";
+                errorCode = 3;
 			} else {
 				// Get the current options and save them so we can restore the default settings later.
 				success = tcgetattr(self.serialFileDescriptor, &gOriginalTTYAttrs);
 				if ( success == -1) {
 					errorMessage = @"Couldn't get serial attributes";
+                    errorCode = 4;
 				} else {
 					// copy the old termios settings into the current
 					//   you want to do this so that you get all the control characters assigned
@@ -103,16 +110,19 @@ NSString *const EndOfTextChar = @"";
 					success = tcsetattr(self.serialFileDescriptor, TCSANOW, &options);
 					if ( success == -1) {
 						errorMessage = @"Coudln't set serial attributes";
+                        errorCode = 5;
 					} else {
 						// Set baud rate (any arbitrary baud rate can be set this way)
 						success = ioctl(self.serialFileDescriptor, IOSSIOSPEED, &baudRate);
 						if ( success == -1) {
 							errorMessage = @"Baud Rate out of bounds";
+                            errorCode = 6;
 						} else {
 							// Set the receive latency (a.k.a. don't wait to buffer data)
 							success = ioctl(self.serialFileDescriptor, IOSSDATALAT, &mics);
 							if ( success == -1) {
 								errorMessage = @"Couldn't set serial latency";
+                                errorCode = 7;
 							}
 						}
 					}
@@ -121,18 +131,20 @@ NSString *const EndOfTextChar = @"";
 		}
 	}
 	
+    
 	// make sure the port is closed if a problem happens
-	if ((self.serialFileDescriptor == -1) && (errorMessage != nil)) {
+	if ((self.serialFileDescriptor == -1) || (errorMessage != nil)) {
 		close(self.serialFileDescriptor);
 		self.serialFileDescriptor = -1;
         [self.interface logWithString:@"Connection error."];
+        NSLog(@"Connection error.");
+        *error = [NSError errorWithDomain:portErrorDomain code:errorCode userInfo:@{ NSLocalizedDescriptionKey : errorMessage }];
     } else {
         readThreadRunning = YES;
         [self.interface logWithString:@"Successfully connected!"];
+        NSLog(@"Successfully connected!");
         [bg start];
     }
-    
-	return errorMessage;
 }
 
 - (void) closeSerialPort {
@@ -316,13 +328,14 @@ NSString *const EndOfTextChar = @"";
     }
 }
 
-- (Program *) prepareProgram: (NSString *)programName withData:(NSDictionary *) dataDict {
-    NSString * uploadProgramPath = [[NSBundle mainBundle] pathForResource:programName ofType:@"lua"];
+- (Program *) prepareProgram:(NSString *)programName withData:(NSDictionary *)dataDict {
+    NSString * uploadProgramPath = [[NSBundle mainBundle] pathForResource:programName
+                                                                   ofType:@"lua"];
     
     NSString * content = [NSString stringWithContentsOfFile: uploadProgramPath
                                                    encoding: NSUTF8StringEncoding
                                                       error: nil];
-    NSRegularExpression* regex = [NSRegularExpression
+    NSRegularExpression * regex = [NSRegularExpression
                                   regularExpressionWithPattern: @"<([A-Za-z\\s]+)>"
                                   options:0 error: nil];
     
@@ -347,7 +360,6 @@ NSString *const EndOfTextChar = @"";
 - (void) writeString: (NSString *) str {
     if(self.serialFileDescriptor!=-1) {
         NSString * temp = [str stringByAppendingString:[NSString stringWithFormat:@"%c%c", 13, 10]];
-//        NSLog(@"%s", [temp cStringUsingEncoding:NSASCIIStringEncoding]);
 		write(self.serialFileDescriptor, [temp cStringUsingEncoding:NSASCIIStringEncoding], [temp length]);
     } else {
         // make sure the user knows they should select a serial port

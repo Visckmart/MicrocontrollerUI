@@ -11,20 +11,24 @@ import Foundation
 extension ViewController {
     
     func checkIfCanRunCommand() -> Bool {
-        //        print("Console text: \(consoleTextStorage.string)")
-//        let regex = try! NSRegularExpression(pattern: "\r\n> ", options: [])
         let cs = consoleTextStorage.string
         if cs.count > 3 {
             let x = String(cs[cs.index(cs.endIndex, offsetBy: -3)..<cs.endIndex])
-//        print("Matches: ",regex.matches(in: x, options: [.withTransparentBounds], range: NSRange(location: 0, length: x.count) ))
-            print(x == "\r\n> " ? "Can run" : "Can't run")
-            return x == "\r\n> "
+            let waitingForCommands = x == "\r\n> "
+            print(waitingForCommands ? "Can run" : "Can't run")
+            return waitingForCommands
         }
         return true
     }
     
     func log(string: String) {
         log(attributedString: NSAttributedString(string: string))
+    }
+    
+    func log(string: String, messageType: MessageType) {
+        let formattedMessage = Helper.format(asSpecialMessage: string,
+                                             with: messageType)
+        self.log(attributedString: formattedMessage)
     }
     
     func log(attributedString: NSAttributedString) {

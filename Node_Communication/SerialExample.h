@@ -41,7 +41,7 @@ typedef NS_ENUM(NSInteger, CommandType) {
 @property (atomic) NSMutableArray * commandQueue;
 @property (atomic) NSMutableArray<NSNumber *> * commandTypeQueue;
 - (void) prepare;
-- (NSString *) openSerialPort: (NSString *)serialPortFile baud: (speed_t)baudRate;
+- (void)openSerialPort: (NSString *)serialPortFile baud: (speed_t)baudRate didFailWithError:(NSError **)error;
 - (void) closeSerialPort;
 - (void)runCommand:(NSString *)rawCommand withIdentifier:(CommandType)cmdType;
 - (void)runCommand:(NSString *)rawCommand withIdentifier:(CommandType)cmdType

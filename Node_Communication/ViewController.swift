@@ -58,6 +58,9 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
             return UserDefaults.standard.string(forKey: "favorite")
         }
         set (newFavorite) {
+            if newFavorite != favoriteDevice {
+                print("New favorite: \(favoriteDevice ?? "no favorite")")
+            }
             UserDefaults.standard.set(newFavorite, forKey: "favorite")
         }
     }
@@ -164,47 +167,50 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         }
     }
     
-    @IBAction func serialListAction(_ sender: Any) {
-//        print(connectionsList.selectedItem?.title)
+    func showConnectionErrorAlert(reason: NSError) {
+        let alert = NSAlert()
+        alert.messageText = "Não foi possível conectar ao dispositivo."
+        alert.informativeText = reason.localizedDescription
+        alert.icon = NSImage(named: NSImage.cautionName)
+        alert.runModal()
+    }
+    
+    func connectTo(devicePath: String) {
+        var openingError: NSError?
+        serial.openSerialPort(devicePath, baud: speed_t(115200), didFailWithError: &openingError)
+        print(openingError ?? "Port openned succesfully")
+        guard openingError == nil else {
+            self.showConnectionErrorAlert(reason: openingError!)
+            return
+        }
+        
+        if restartCheckbox.state == .on {
+            deviceControl.restart()
+            deviceControl.readFiles()
+        } else { canWrite = true }
+        
+        self.favoriteDevice = devicePath
+        self.isConnected = true
     }
     
     @IBAction func connectButtonClicked(_ sender: NSButton) {
         if isConnected == false {
             let indexOfSelectedItem = connectionsList.indexOfSelectedItem
             guard indexOfSelectedItem != -1 else {
-                print("No item selected")
+                print("No item selected.")
                 return
             }
-            print("Will try to connect to \(deviceDiscovery.pathList[indexOfSelectedItem] as! String)")
-            let item = deviceDiscovery.pathList[indexOfSelectedItem] as! String
-            let openingResponse = serial.openSerialPort(item, baud: speed_t(115200))
-            if openingResponse != nil {
-                let alert = NSAlert()
-                alert.messageText = "Não foi possível conectar ao dispositivo."
-                alert.informativeText = openingResponse!
-                alert.icon = NSImage(named: NSImage.cautionName)
-                alert.runModal()
-            } else {
-                if restartCheckbox.state == .on {
-                    deviceControl.restart()
-                    deviceControl.readFiles()
-//                    serial.write("node.restart()")
-//                    serial.runCommand("node.restart()", withIdentifier: .none)
-                }
-                else { canWrite = true }
-                
-                print("Favorite: \(favoriteDevice ?? "no favorite")")
-                favoriteDevice = item
-                isConnected = true
-//                commandTextfield.isEnabled = false
-//                commandTextfield.isEnabled = true
-//                commandTextfield.window!.makeFirstResponder(commandTextfield)
-//                sender.resignFirstResponder()
+            guard let item = deviceDiscovery.pathList[indexOfSelectedItem] as? String else {
+                print("Item not found on paths' list.")
+                return
             }
+            print("Will try to connect to \(item)")
+            self.connectTo(devicePath: item)
         } else {
             if shouldUseAlternativeAction {
                 print("Would try to restart.")
                 deviceControl.restart()
+                canWrite = false
             } else {
                 print("Would try to disconnect.")
                 serial.closeSerialPort()
@@ -224,23 +230,19 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     
     var canWrite = false
     
-    func uploadProcedure(fileURL: URL) {
-        print("Panel URL: \(String(describing: fileURL))")
-        self.serial.write("print('Will upload file \(fileURL.lastPathComponent)')")
-        self.deviceControl.uploadFile(fileURL)
-        
-        // TODO: Improve with Swift 5
-        if let lastModif = try? getLastModifiedDate(ofFile: fileURL.path) {
-            self.lastUploadedFile = (url: fileURL, lastModified: lastModif!)
-            self.refreshUploadText.stringValue = "This button allows you to reupload the most recent file if changes were made."
-        }
-    }
-    
     @IBAction func uploadButtonClicked(_ sender: Any) {
         let panel = NSOpenPanel()
         panel.begin { (response) in
             if response == .OK, let chosenFileURL = panel.url {
-                self.uploadProcedure(fileURL: chosenFileURL)
+                print("Panel URL: \(String(describing: chosenFileURL))")
+                self.log(string: "Will upload file \(chosenFileURL.lastPathComponent)", messageType: .common)
+                self.deviceControl.uploadFile(chosenFileURL)
+                
+                // TODO: Improve with Swift 5
+                if let lastModif = try? getLastModifiedDate(ofFile: chosenFileURL.path) {
+                    self.lastUploadedFile = (url: chosenFileURL, lastModified: lastModif!)
+                    self.refreshUploadText.stringValue = "This button allows you to reupload the most recent file if changes were made."
+                }
             } else if response == NSApplication.ModalResponse.cancel {
                 print("cancelled")
             }
@@ -258,42 +260,6 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
             self.lastUploadedFile!.lastModified = lastModif!
         }
         refreshUploadButton.isEnabled = false
-    }
-    
-    // MARK: - Commands Area
-    
-    func controlTextDidChange(_ obj: Notification) {
-        guard let textField = obj.object as? NSTextField,
-            textField == commandTextfield else { return }
-        history.updateMostRecentEntry()
-    }
-    
-    @IBAction func sendButtonClicked(_ sender: Any) {
-        serial.write(commandTextfield.stringValue)
-        commandTextfield.stringValue = ""
-        history.pushAndResetPivot()
-    }
-    
-    func altIsPressed(status: Bool) {
-        shouldUseAlternativeAction = status
-        if status == true && isConnected {
-            connectButton.title = "Restart"
-        } else {
-            connectButton.title = isConnected ? "Close" : "Open"
-        }
-    }
-    
-    // TODO: Checar essa parte para ver se realmente está funcionando como deveria
-    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-        guard control == commandTextfield else { return false }
-        
-        let direction: CommandHistory.NavigationDirection
-        if commandSelector == moveUpSelector        { direction = .back }
-        else if commandSelector == moveDownSelector { direction = .forward }
-        else { return false }
-        
-        history.movePivot(to: direction)
-        return true
     }
 
 

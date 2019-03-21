@@ -976,9 +976,6 @@ CQ
                                         </items>
                                     </menu>
                                 </popUpButtonCell>
-                                <connections>
-                                    <action selector="serialListAction:" target="XfG-lQ-9wD" id="a0w-Hp-i1n"/>
-                                </connections>
                             </popUpButton>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="E08-Yp-GKk">
                                 <rect key="frame" x="662" y="963" width="73" height="32"/>
