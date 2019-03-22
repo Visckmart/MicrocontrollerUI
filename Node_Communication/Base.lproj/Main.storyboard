@@ -951,7 +951,7 @@
                                     <real value="3.4028234663852886e+38"/>
                                 </customSpacing>
                             </stackView>
-                            <textField focusRingType="exterior" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vbs-xv-kUa">
+                            <textField focusRingType="exterior" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vbs-xv-kUa" customClass="HistoryTextField" customModule="Node_Communication" customModuleProvider="target">
                                 <rect key="frame" x="24" y="24" width="630" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" focusRingType="exterior" placeholderString="command" drawsBackground="YES" id="13b-hN-NQG">
                                     <font key="font" usesAppearanceFont="YES"/>

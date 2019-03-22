@@ -8,7 +8,7 @@
 
 import Cocoa
 
-class ViewController: NSViewController, Writes, NSTextFieldDelegate {
+class ViewController: NSViewController, Writes {
     
     // MARK: Communication elements
     @IBOutlet weak var refreshButton: NSButton!
@@ -27,7 +27,7 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
     @IBOutlet weak var refreshUploadText: NSTextField!
     
     // MARK: Command elements
-    @IBOutlet weak var commandTextfield: NSTextField!
+    @IBOutlet weak var commandTextfield: HistoryTextField!
     @IBOutlet weak var sendButton: NSButton!
     @IBOutlet weak var restartCheckbox: NSButton!
     
@@ -92,11 +92,11 @@ class ViewController: NSViewController, Writes, NSTextFieldDelegate {
         serial.interface = self
         serial.prepare()
         refreshList()
-        commandTextfield.delegate = self
+//        commandTextfield.delegate = self
         sendButton.keyEquivalent = "\r"
         restartCheckbox.keyEquivalent = "r"
         sideBar.doubleAction = #selector(ViewController.doubleClickOnResultRow)
-        history.attatchedTextField = commandTextfield
+//        history.attatchedTextField = commandTextfield
     }
     
     // TODO: Passar essa função para a classe da side bar

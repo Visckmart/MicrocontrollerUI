@@ -3,6 +3,6 @@
 //
 
 #import "SerialExample.h"
-#import "HelperFunctions-ObjC.m"
+#import "HelperFunctions-ObjC.h"
 #import "DeviceIntegration.m"
 #import "DeviceDiscovery.m"

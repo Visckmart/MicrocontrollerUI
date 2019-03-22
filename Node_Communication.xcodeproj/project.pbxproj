@@ -12,6 +12,9 @@
 		7E2E04D42239DA020077A008 /* CommandWrapper.lua in Resources */ = {isa = PBXBuildFile; fileRef = 7E2E04D32239DA020077A008 /* CommandWrapper.lua */; };
 		7E2E04D62239DCF60077A008 /* DeviceIntegration.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E2E04D52239DCF60077A008 /* DeviceIntegration.m */; };
 		7E2E04DB2239EE020077A008 /* DeviceDiscovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E2E04DA2239EE020077A008 /* DeviceDiscovery.m */; };
+		7E355B0822431AE80089935D /* Node_CommunicationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E355B0722431AE80089935D /* Node_CommunicationTests.swift */; };
+		7E355B1022431C070089935D /* CommandHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E355B0F22431C070089935D /* CommandHistoryTests.swift */; };
+		7E355B12224462DF0089935D /* HistoryTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E355B11224462DF0089935D /* HistoryTextField.swift */; };
 		7E4844FF22321AEE00A24055 /* HelperFunctions-ObjC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E4844FE22321AEE00A24055 /* HelperFunctions-ObjC.m */; };
 		7E6708AB223DB5C700D182C2 /* MessageType.h in Sources */ = {isa = PBXBuildFile; fileRef = 7E6708AA223DB5C700D182C2 /* MessageType.h */; };
 		7E6708AD223DBBE700D182C2 /* ViewController+Console.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E6708AC223DBBE700D182C2 /* ViewController+Console.swift */; };
@@ -27,6 +30,16 @@
 		7EFAB8A6223F509800A024F6 /* CommandHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EFAB8A5223F509800A024F6 /* CommandHistory.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		7E355B0A22431AE80089935D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7E81C11B222B5C1D001FCAC7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7E81C122222B5C1D001FCAC7;
+			remoteInfo = Node_Communication;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		7E0F4AB3222C810A00C0C57E /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		7E0F4AB5222CAD2700C0C57E /* SidebarOutlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarOutlineView.swift; sourceTree = "<group>"; };
@@ -34,6 +47,11 @@
 		7E2E04D52239DCF60077A008 /* DeviceIntegration.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceIntegration.m; sourceTree = "<group>"; };
 		7E2E04D72239DD500077A008 /* DeviceIntegration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeviceIntegration.h; sourceTree = "<group>"; };
 		7E2E04DA2239EE020077A008 /* DeviceDiscovery.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceDiscovery.m; sourceTree = "<group>"; };
+		7E355B0522431AE80089935D /* Node_CommunicationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Node_CommunicationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E355B0722431AE80089935D /* Node_CommunicationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node_CommunicationTests.swift; sourceTree = "<group>"; };
+		7E355B0922431AE80089935D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7E355B0F22431C070089935D /* CommandHistoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandHistoryTests.swift; sourceTree = "<group>"; };
+		7E355B11224462DF0089935D /* HistoryTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryTextField.swift; sourceTree = "<group>"; };
 		7E4844FE22321AEE00A24055 /* HelperFunctions-ObjC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "HelperFunctions-ObjC.m"; sourceTree = "<group>"; };
 		7E48450122321D7800A24055 /* HelperFunctions-ObjC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HelperFunctions-ObjC.h"; sourceTree = "<group>"; };
 		7E6708AA223DB5C700D182C2 /* MessageType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MessageType.h; sourceTree = "<group>"; };
@@ -56,6 +74,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		7E355B0222431AE80089935D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7E81C120222B5C1D001FCAC7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -109,10 +134,21 @@
 			name = Utilities;
 			sourceTree = "<group>";
 		};
+		7E355B0622431AE80089935D /* Node_CommunicationTests */ = {
+			isa = PBXGroup;
+			children = (
+				7E355B0722431AE80089935D /* Node_CommunicationTests.swift */,
+				7E355B0F22431C070089935D /* CommandHistoryTests.swift */,
+				7E355B0922431AE80089935D /* Info.plist */,
+			);
+			path = Node_CommunicationTests;
+			sourceTree = "<group>";
+		};
 		7E81C11A222B5C1D001FCAC7 = {
 			isa = PBXGroup;
 			children = (
 				7E81C125222B5C1D001FCAC7 /* Node_Communication */,
+				7E355B0622431AE80089935D /* Node_CommunicationTests */,
 				7E81C124222B5C1D001FCAC7 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -121,6 +157,7 @@
 			isa = PBXGroup;
 			children = (
 				7E81C123222B5C1D001FCAC7 /* Node_Communication.app */,
+				7E355B0522431AE80089935D /* Node_CommunicationTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -133,6 +170,7 @@
 				7E933EDD224099C2006CDC60 /* ViewController+CommandsArea.swift */,
 				7E6708AC223DBBE700D182C2 /* ViewController+Console.swift */,
 				7EFAB8A5223F509800A024F6 /* CommandHistory.swift */,
+				7E355B11224462DF0089935D /* HistoryTextField.swift */,
 				7E2E04DC223A020A0077A008 /* Serial */,
 				7E2E04DF223A027A0077A008 /* Utilities */,
 				7E81C13C222B942A001FCAC7 /* InterfaceProtocol.swift */,
@@ -148,6 +186,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		7E355B0422431AE80089935D /* Node_CommunicationTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7E355B0E22431AE80089935D /* Build configuration list for PBXNativeTarget "Node_CommunicationTests" */;
+			buildPhases = (
+				7E355B0122431AE80089935D /* Sources */,
+				7E355B0222431AE80089935D /* Frameworks */,
+				7E355B0322431AE80089935D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7E355B0B22431AE80089935D /* PBXTargetDependency */,
+			);
+			name = Node_CommunicationTests;
+			productName = Node_CommunicationTests;
+			productReference = 7E355B0522431AE80089935D /* Node_CommunicationTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		7E81C122222B5C1D001FCAC7 /* Node_Communication */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7E81C133222B5C1F001FCAC7 /* Build configuration list for PBXNativeTarget "Node_Communication" */;
@@ -175,6 +231,10 @@
 				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = Visckmart;
 				TargetAttributes = {
+					7E355B0422431AE80089935D = {
+						CreatedOnToolsVersion = 10.1;
+						TestTargetID = 7E81C122222B5C1D001FCAC7;
+					};
 					7E81C122222B5C1D001FCAC7 = {
 						CreatedOnToolsVersion = 10.1;
 						LastSwiftMigration = 1010;
@@ -195,11 +255,19 @@
 			projectRoot = "";
 			targets = (
 				7E81C122222B5C1D001FCAC7 /* Node_Communication */,
+				7E355B0422431AE80089935D /* Node_CommunicationTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		7E355B0322431AE80089935D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7E81C121222B5C1D001FCAC7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -214,10 +282,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		7E355B0122431AE80089935D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7E355B1022431C070089935D /* CommandHistoryTests.swift in Sources */,
+				7E355B0822431AE80089935D /* Node_CommunicationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7E81C11F222B5C1D001FCAC7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7E355B12224462DF0089935D /* HistoryTextField.swift in Sources */,
 				7E6708AB223DB5C700D182C2 /* MessageType.h in Sources */,
 				7E933EDE224099C2006CDC60 /* ViewController+CommandsArea.swift in Sources */,
 				7E0F4AB4222C810A00C0C57E /* Utilities.swift in Sources */,
@@ -237,6 +315,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		7E355B0B22431AE80089935D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7E81C122222B5C1D001FCAC7 /* Node_Communication */;
+			targetProxy = 7E355B0A22431AE80089935D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
 		7E81C12C222B5C1F001FCAC7 /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
@@ -249,6 +335,46 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		7E355B0C22431AE80089935D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 47F59X4A7T;
+				INFOPLIST_FILE = Node_CommunicationTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.visckmart.Node-CommunicationTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Node_Communication.app/Contents/MacOS/Node_Communication";
+			};
+			name = Debug;
+		};
+		7E355B0D22431AE80089935D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 47F59X4A7T;
+				INFOPLIST_FILE = Node_CommunicationTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.visckmart.Node-CommunicationTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Node_Communication.app/Contents/MacOS/Node_Communication";
+			};
+			name = Release;
+		};
 		7E81C131222B5C1F001FCAC7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -410,6 +536,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		7E355B0E22431AE80089935D /* Build configuration list for PBXNativeTarget "Node_CommunicationTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E355B0C22431AE80089935D /* Debug */,
+				7E355B0D22431AE80089935D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		7E81C11E222B5C1D001FCAC7 /* Build configuration list for PBXProject "Node_Communication" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -27,34 +27,32 @@ class CommandHistory {
         }
     }
     
-    var attatchedTextField: NSTextField!
-    var attatchedTextFieldText: String {
-        get             { return attatchedTextField.stringValue }
-        set (newText)   { attatchedTextField.stringValue = newText }
-    }
-    
-    func pushAndResetPivot() {
+    @discardableResult
+    func push(andResetPivot resetPivot: Bool = true) -> String {
         commands.insert("", at: 0)
         historyState = 0
+        return ""
     }
     
-    func updateMostRecentEntry() {
-        commands[0] = attatchedTextFieldText
+    func updateMostRecentEntry(command: String) {
+        commands[0] = command
     }
     
     /// Moves the current history state and updates the attatched textfield.
-    func movePivot(to dir: NavigationDirection) {
+    @discardableResult
+    func movePivot(_ dir: NavigationDirection) -> String {
+        let currentText = commands[0]
         switch dir {
         case .back:
             // If the history pivot is at -1 and there's something written,
             // the content already went to the position 0. The pivot should
             // indirectly override this position by jumping to the position 1
-            let shouldJump = historyState == -1 && !attatchedTextFieldText.isEmpty
+            let shouldJump = historyState == -1 && !currentText.isEmpty
             if shouldJump { historyState = 1 } else { historyState += 1 }
         case .forward:
             // If the history pivot is at 0 and there's nothing written,
             // it shouldn't go to -1.
-            let forwardBlocked = historyState == 0 && attatchedTextFieldText.isEmpty
+            let forwardBlocked = historyState == 0 && currentText.isEmpty
             if !forwardBlocked { historyState -= 1 }
             else { NSSound(named: "Funk")?.play() }
         }
@@ -62,7 +60,9 @@ class CommandHistory {
         
         // If the pivot is at -1 then clear the textfield,
         // else, populate it with the command stored on the history
-        if historyState == -1 { attatchedTextFieldText = "" }
-        else { attatchedTextFieldText = commands[historyState] }
+        if historyState == -1 {
+            return ""
+        }
+        return commands[historyState]
     }
 }

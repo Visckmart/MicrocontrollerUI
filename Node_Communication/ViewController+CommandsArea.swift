@@ -12,16 +12,9 @@ extension ViewController {
     
     // MARK: - Commands Area
     
-    func controlTextDidChange(_ obj: Notification) {
-        guard let textField = obj.object as? NSTextField,
-            textField == commandTextfield else { return }
-        history.updateMostRecentEntry()
-    }
-    
     @IBAction func sendButtonClicked(_ sender: Any) {
         serial.write(commandTextfield.stringValue)
-        commandTextfield.stringValue = ""
-        history.pushAndResetPivot()
+        commandTextfield.pushHistory()
     }
     
     func altIsPressed(status: Bool) {
@@ -42,7 +35,7 @@ extension ViewController {
         else if commandSelector == moveDownSelector { direction = .forward }
         else { return false }
         
-        history.movePivot(to: direction)
+        commandTextfield.movePivot(direction)
         return true
     }
 }
