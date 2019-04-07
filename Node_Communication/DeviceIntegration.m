@@ -68,10 +68,11 @@ typedef NSString Program;
     
     // Load the contents of the file onto a NSString
     NSString * fileContent = [[NSString alloc] initWithData: file encoding: NSUTF8StringEncoding];
-    
+//    NSString * s = [NSString stringWithFormat:@"%@ %@", prepareFileUpload, fileContent];
     // Effectively uploads the file
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.serial writeString: prepareFileUpload];
+//        [self.serial runCommand:s withIdentifier:common];
         [self.serial writeString: fileContent];
     });
 }

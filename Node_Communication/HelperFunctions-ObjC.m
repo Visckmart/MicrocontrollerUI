@@ -16,7 +16,7 @@
         return [NSArray array];
     }
     NSMutableArray * filteredArray = [NSMutableArray array];
-    NSRegularExpression * regex = [NSRegularExpression regularExpressionWithPattern:@"^\\s*([A-Za-z0-9\\.-]+)\\s*$" options:0 error:nil];
+    NSRegularExpression * regex = [NSRegularExpression regularExpressionWithPattern:@"^\\s*([A-Za-z0-9\\.-\\p{Connector_Punctiation}]+)\\.lua\\s*$" options:0 error:nil];
     for (NSString * name in stringArray) {
         NSRange nameRange = NSMakeRange(0, [name length]);
         NSTextCheckingResult * firstMatch = [regex firstMatchInString:name options:0 range:nameRange];

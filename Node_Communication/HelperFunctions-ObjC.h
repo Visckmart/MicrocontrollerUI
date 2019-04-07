@@ -13,8 +13,8 @@
 #define HelperFunctions_ObjC_h
 
 @interface Helper : NSObject
-+ (NSArray *) filterFilenames:(NSArray *) stringArray;
-+ (NSAttributedString *)formatAsSpecialMessage:(NSString *)rawString withType:(MessageType)messageType;
++ (NSArray *_Nonnull) filterFilenames:(NSArray *_Nonnull) stringArray;
++ (NSAttributedString * _Nonnull)formatAsSpecialMessage:(NSString *_Nonnull)rawString withType:(MessageType)messageType;
 @end
 
 #endif /* HelperFunctions_ObjC_h */

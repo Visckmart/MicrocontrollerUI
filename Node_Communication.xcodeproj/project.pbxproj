@@ -27,6 +27,7 @@
 		7E81C13D222B942A001FCAC7 /* InterfaceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E81C13C222B942A001FCAC7 /* InterfaceProtocol.swift */; };
 		7E933EDE224099C2006CDC60 /* ViewController+CommandsArea.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E933EDD224099C2006CDC60 /* ViewController+CommandsArea.swift */; };
 		7EA5B2D7222EFFFD001947B2 /* FileUpload_Start.lua in Resources */ = {isa = PBXBuildFile; fileRef = 7EA5B2D6222EFFFD001947B2 /* FileUpload_Start.lua */; };
+		7EA706BC22592A9F00DC17AF /* ViewController+Upload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EA706BB22592A9F00DC17AF /* ViewController+Upload.swift */; };
 		7EFAB8A6223F509800A024F6 /* CommandHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EFAB8A5223F509800A024F6 /* CommandHistory.swift */; };
 /* End PBXBuildFile section */
 
@@ -70,6 +71,7 @@
 		7E81C13C222B942A001FCAC7 /* InterfaceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfaceProtocol.swift; sourceTree = "<group>"; };
 		7E933EDD224099C2006CDC60 /* ViewController+CommandsArea.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+CommandsArea.swift"; sourceTree = "<group>"; };
 		7EA5B2D6222EFFFD001947B2 /* FileUpload_Start.lua */ = {isa = PBXFileReference; lastKnownFileType = text; path = FileUpload_Start.lua; sourceTree = "<group>"; };
+		7EA706BB22592A9F00DC17AF /* ViewController+Upload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+Upload.swift"; sourceTree = "<group>"; };
 		7EFAB8A5223F509800A024F6 /* CommandHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandHistory.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -169,6 +171,7 @@
 				7E81C128222B5C1D001FCAC7 /* ViewController.swift */,
 				7E933EDD224099C2006CDC60 /* ViewController+CommandsArea.swift */,
 				7E6708AC223DBBE700D182C2 /* ViewController+Console.swift */,
+				7EA706BB22592A9F00DC17AF /* ViewController+Upload.swift */,
 				7EFAB8A5223F509800A024F6 /* CommandHistory.swift */,
 				7E355B11224462DF0089935D /* HistoryTextField.swift */,
 				7E2E04DC223A020A0077A008 /* Serial */,
@@ -300,6 +303,7 @@
 				7E933EDE224099C2006CDC60 /* ViewController+CommandsArea.swift in Sources */,
 				7E0F4AB4222C810A00C0C57E /* Utilities.swift in Sources */,
 				7E0F4AB6222CAD2700C0C57E /* SidebarOutlineView.swift in Sources */,
+				7EA706BC22592A9F00DC17AF /* ViewController+Upload.swift in Sources */,
 				7E2E04DB2239EE020077A008 /* DeviceDiscovery.m in Sources */,
 				7E81C129222B5C1D001FCAC7 /* ViewController.swift in Sources */,
 				7E2E04D62239DCF60077A008 /* DeviceIntegration.m in Sources */,

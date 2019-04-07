@@ -10,6 +10,7 @@ import Cocoa
 
 class WindowController: NSWindowController, NSWindowDelegate {
 
+    // Convenience variable to refer to the ViewController that's inside the window
     var viewController: ViewController {
         return (contentViewController as! ViewController)
     }
@@ -18,23 +19,15 @@ class WindowController: NSWindowController, NSWindowDelegate {
     
         // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
     }
-    var optionIsPressed = false
+    
     override var acceptsFirstResponder: Bool { return true }
+    
     override func flagsChanged(with event: NSEvent) {
-//        print(event)
-        if optionIsPressed != NSEvent.modifierFlags.contains(.option) {
-            optionIsPressed.toggle()
-            viewController.altIsPressed(status: optionIsPressed)
-        }
+        viewController.checkOptionKey()
     }
     
-    func windowDidResize(_ notification: Notification) {
-        (contentViewController as! ViewController).adaptLayout()
-    }
     func windowDidBecomeMain(_ notification: Notification) {
-//        print(#function)
-        let optionPressed = NSEvent.modifierFlags.contains(.option)
-        viewController.altIsPressed(status: optionPressed)
+        viewController.checkOptionKey()
         viewController.checkFileRefresh()
     }
 

@@ -248,14 +248,11 @@ NSString *const EndOfTextChar = @"";
         FD_ZERO(&readset);
         FD_SET(self.serialFileDescriptor, &readset);
         if (self.canWrite && commandRunning == none) {
-            NSLog(@"Would run");
             if (self.commandQueue.count > 0) {
                 NSLog(@"Running now");
                 commandRunning = self.commandTypeQueue[0].intValue;
                 [self writeString:self.commandQueue[0]];
             }
-        } else {
-            NSLog(@"Wouldn't run");
         }
         result = select(self.serialFileDescriptor + 1, &readset, NULL, NULL, NULL);
         if (result > 0) {
@@ -317,6 +314,7 @@ NSString *const EndOfTextChar = @"";
                             @"command":rawCommand,
                             @"control end":EndOfTextChar};
     Program * wrappedCommand = [self prepareProgram:@"CommandWrapper" withData:dict];
+    NSLog(@"Wrapped command: %@", wrappedCommand);
     if (commandRunning == none) {
         NSLog(@"Running command now");
         commandRunning = cmdType;

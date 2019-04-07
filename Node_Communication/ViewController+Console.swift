@@ -10,6 +10,10 @@ import Foundation
 
 extension ViewController {
     
+    /// Uses a 'dumb' check to tell if a command can be run
+    ///
+    /// The check is simply a match of ```'\r\n> '``` at the end of the console text.
+    /// - Returns: whether a command can be run now or not
     func checkIfCanRunCommand() -> Bool {
         let cs = consoleTextStorage.string
         if cs.count > 3 {
@@ -21,16 +25,26 @@ extension ViewController {
         return true
     }
     
+    
     func log(string: String) {
         log(attributedString: NSAttributedString(string: string))
     }
     
+    /// Writes a message to the console.
+    ///
+    /// - Parameters:
+    ///   - string: the message content
+    ///   - messageType: the message type (common, important)
     func log(string: String, messageType: MessageType) {
-        let formattedMessage = Helper.format(asSpecialMessage: string,
+        let formattedMessage = Helper.format(asSpecialMessage: string+"\n",
                                              with: messageType)
         self.log(attributedString: formattedMessage)
     }
     
+    // TODO: Melhorar
+    /// Writes an attributed string to the console.
+    ///
+    /// - Parameter attributedString: the attributed string to be written
     func log(attributedString: NSAttributedString) {
         let newString = NSMutableAttributedString(attributedString: attributedString)
         if newString.string.contains("NodeMCU") {

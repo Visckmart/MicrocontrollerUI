@@ -18,10 +18,7 @@ class ViewController: NSViewController, Writes {
     // MARK: Console and Sidebar
     @IBOutlet weak var consoleTextView: NSScrollView!
     @IBOutlet weak var sideBarWrapper: NSScrollView!
-    private var sideBar: NSOutlineView {
-        return sideBarWrapper.documentView as! NSOutlineView
-    }
-    
+
     @IBOutlet weak var uploadButton: NSButton!
     @IBOutlet weak var refreshUploadButton: NSButton!
     @IBOutlet weak var refreshUploadText: NSTextField!
@@ -32,21 +29,33 @@ class ViewController: NSViewController, Writes {
     @IBOutlet weak var restartCheckbox: NSButton!
     
     // MARK: Logic variables
-    
     var isConnected: Bool = false {
         didSet {
             DispatchQueue.main.async {
-                let connectionState = self.isConnected
                 
-                self.uploadButton.isEnabled = connectionState
-                self.commandTextfield.isEnabled = connectionState
-                self.sendButton.isEnabled = connectionState
-                self.connectButton.title = connectionState ? "Close" : "Open"
+                self.uploadButton.isEnabled     = self.isConnected
+                self.commandTextfield.isEnabled = self.isConnected
+                self.sendButton.isEnabled       = self.isConnected
+                self.connectButton.title = self.isConnected ? "Close" : "Open"
+                if self.isConnected {
+                    self.view.window!.makeFirstResponder(self.commandTextfield)
+                } else {
+                    self.view.window!.makeFirstResponder(self.sendButton)
+                }
                 self.checkFileRefresh()
-                self.view.window!.makeFirstResponder(connectionState ?self.commandTextfield : self.sendButton)
             }
         }
     }
+    
+    // MARK: Convenience variables
+    
+    private var sideBar: NSOutlineView {
+        return sideBarWrapper.documentView as! NSOutlineView
+    }
+    private var sideBarDataSource: SidebarOutlineView {
+        return sideBar.dataSource as! SidebarOutlineView
+    }
+    
     var consoleTextStorage: NSTextStorage {
         get {
             return (consoleTextView.documentView as! NSTextView).textStorage!
@@ -65,6 +74,8 @@ class ViewController: NSViewController, Writes {
         }
     }
     
+    
+    /// Indicates if the close button should actually restart the device
     var shouldUseAlternativeAction = false
     
     var files: [String] = [] {
@@ -74,34 +85,41 @@ class ViewController: NSViewController, Writes {
         }
     }
     
+    // MARK: -
+    
     let history = CommandHistory()
     
     let serial = SerialExample()
     let deviceControl = DeviceIntegration()
     let deviceDiscovery = DeviceDiscovery()
     
-    // MARK: - Setup e Layout
+    // MARK: - Setup and Layout
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
-        (consoleTextView.documentView as! NSTextView).isEditable = false
         isConnected = false
         deviceControl.serial = serial
         serial.interface = self
         serial.prepare()
+        
+        setupKeyShortcuts()
         refreshList()
-//        commandTextfield.delegate = self
+    }
+    
+    private func setupKeyShortcuts() {
         sendButton.keyEquivalent = "\r"
+        
+        restartCheckbox.keyEquivalentModifierMask = .command
         restartCheckbox.keyEquivalent = "r"
-        sideBar.doubleAction = #selector(ViewController.doubleClickOnResultRow)
-//        history.attatchedTextField = commandTextfield
+        
+        refreshUploadButton.keyEquivalentModifierMask = [.command, .shift]
+        refreshUploadButton.keyEquivalent = "r"
     }
     
     // TODO: Passar essa função para a classe da side bar
     private func repopulateSideBar(with elements: [String]) {
-        (sideBar.dataSource as! SidebarOutlineView).nomes = elements
+        sideBarDataSource.nomes = elements
         let indexPathsToClear = IndexSet(integersIn: 1..<sideBar.numberOfRows)
         sideBar.removeItems(at: indexPathsToClear, inParent: nil,
                             withAnimation: .effectFade)
@@ -122,38 +140,38 @@ class ViewController: NSViewController, Writes {
         let currentModifDate = try? getLastModifiedDate(ofFile: lastUploadedFile.url.path)
         if lastUploadedFile.lastModified < currentModifDate!! {
             refreshUploadButton.isEnabled = true
-            self.refreshUploadText.stringValue = "Reupload \"\(lastUploadedFile.url.lastPathComponent)\" with it's latest changes."
+            
+            let filename = lastUploadedFile.url.lastPathComponent
+            let uploadText = "Reupload \"\(filename)\" with it's latest changes."
+            self.refreshUploadText.stringValue = uploadText
         }
     }
     
-    @objc func doubleClickOnResultRow()
+    @IBAction func doubleClickOnResultRow(_ sender: Any)
     {
 //        print("doubleClickOnResultRow \((sideBarWrapper.documentView as? NSOutlineView)?.clickedRow)")
         if sideBar.clickedRow == 0 {
             deviceControl.readFiles()
         } else {
-            deviceControl.runFile((sideBar.dataSource as! SidebarOutlineView).nomes[sideBar.clickedRow-1])
+            deviceControl.runFile(sideBarDataSource.nomes[sideBar.clickedRow-1]+".lua")
         }
         sideBar.deselectRow(sideBar.clickedRow)
-    }
-    
-    func adaptLayout() {
-        sideBarWrapper.isHidden = view.frame.width < 515
-        if view.frame.width <= 515 {
-            restartCheckbox.title = "Restart"
-        } else {
-            restartCheckbox.title = "Restart and refresh files on connection"
-        }
     }
 
     // MARK: - Connection Area
     
+    /// Refreshes the list of devices that are connected on the computer.
     @IBAction func refreshList(_ sender: NSButton? = nil) {
         connectionsList.removeAllItems()
         deviceDiscovery.refreshSerialList()
+        
+        // Grabs the connected devices' paths and names and checks if there's at least one device connected
         if let connectedDevicePaths = deviceDiscovery.pathList as? [String],
-           let connectedDeviceNames = deviceDiscovery.nameList as? [String] {
+           let connectedDeviceNames = deviceDiscovery.nameList as? [String],
+            connectedDeviceNames.count > 0 {
+            // Add the connected device names to the list on the interface
             connectionsList.addItems(withTitles: connectedDeviceNames)
+            // If there's a favorite device and it's on the list, select it
             if let favoriteDevice = favoriteDevice,
                let positionOfFav = connectedDevicePaths.firstIndex(of: favoriteDevice) {
                 connectionsList.selectItem(at: positionOfFav)
@@ -167,20 +185,28 @@ class ViewController: NSViewController, Writes {
         }
     }
     
-    func showConnectionErrorAlert(reason: NSError) {
+    /// Shows an alert in the form of a small window with the appropriate title and icon.
+    ///
+    /// - Parameter reason: what caused the error, to help the user understand what happened
+    func showConnectionErrorAlert(reason: String) {
         let alert = NSAlert()
         alert.messageText = "Não foi possível conectar ao dispositivo."
-        alert.informativeText = reason.localizedDescription
+        alert.informativeText = reason
         alert.icon = NSImage(named: NSImage.cautionName)
         alert.runModal()
     }
     
+    /// Tries to connect to the device by opening and setting up the connection.
+    ///
+    /// - Parameter devicePath: the device to connect
     func connectTo(devicePath: String) {
+        // Try to open the port and set up the port
         var openingError: NSError?
         serial.openSerialPort(devicePath, baud: speed_t(115200), didFailWithError: &openingError)
+        
         print(openingError ?? "Port openned succesfully")
-        guard openingError == nil else {
-            self.showConnectionErrorAlert(reason: openingError!)
+        guard openingError == nil else { // If there was an error, show an alert
+            self.showConnectionErrorAlert(reason: openingError!.localizedDescription)
             return
         }
         
@@ -189,37 +215,59 @@ class ViewController: NSViewController, Writes {
             deviceControl.readFiles()
         } else { canWrite = true }
         
+        // The favorite device is now this one
         self.favoriteDevice = devicePath
+        
         self.isConnected = true
     }
     
+    /// Action called when the open/close/restart button is clicked.
+    ///
+    /// If not connected, tries to open connection. If connected and the option
+    /// key is pressed, restarts the device. Else, closes the connection.
     @IBAction func connectButtonClicked(_ sender: NSButton) {
+        // If no device is connected, try to connect to the selected one
         if isConnected == false {
             let indexOfSelectedItem = connectionsList.indexOfSelectedItem
             guard indexOfSelectedItem != -1 else {
-                print("No item selected.")
+                showConnectionErrorAlert(reason: "No item selected.")
                 return
             }
             guard let item = deviceDiscovery.pathList[indexOfSelectedItem] as? String else {
-                print("Item not found on paths' list.")
+                showConnectionErrorAlert(reason: "Item not found on paths' list.")
                 return
             }
             print("Will try to connect to \(item)")
             self.connectTo(devicePath: item)
-        } else {
-            if shouldUseAlternativeAction {
-                print("Would try to restart.")
+            
+        } else { // If there's a connected device
+            if shouldUseAlternativeAction { // If the option key is pressed, restart
+                print("Will try to restart.")
                 deviceControl.restart()
                 canWrite = false
-            } else {
-                print("Would try to disconnect.")
+            } else { // Else, disconnect
+                print("Will try to disconnect.")
                 serial.closeSerialPort()
                 isConnected = false
             }
         }
     }
     
-    @objc dynamic var canRunCommand = false {
+    /// Updates the open/close connection button to the appropriate behavior.
+    ///
+    /// The button should behave as a restart button when the connection is
+    /// opened and the user is pressing option.
+    /// This function is called by the ViewController's window.
+    func checkOptionKey() {
+        shouldUseAlternativeAction = NSEvent.modifierFlags.contains(.option)
+        if shouldUseAlternativeAction && isConnected {
+            connectButton.title = "Restart"
+        } else {
+            connectButton.title = isConnected ? "Close" : "Open"
+        }
+    }
+    
+    @objc var canRunCommand = false {
         didSet {
             serial.setWriteAvailability(canRunCommand)
             print("canRunCommand \(canRunCommand)")
@@ -229,39 +277,6 @@ class ViewController: NSViewController, Writes {
     // MARK: Writes protocol
     
     var canWrite = false
-    
-    @IBAction func uploadButtonClicked(_ sender: Any) {
-        let panel = NSOpenPanel()
-        panel.begin { (response) in
-            if response == .OK, let chosenFileURL = panel.url {
-                print("Panel URL: \(String(describing: chosenFileURL))")
-                self.log(string: "Will upload file \(chosenFileURL.lastPathComponent)", messageType: .common)
-                self.deviceControl.uploadFile(chosenFileURL)
-                
-                // TODO: Improve with Swift 5
-                if let lastModif = try? getLastModifiedDate(ofFile: chosenFileURL.path) {
-                    self.lastUploadedFile = (url: chosenFileURL, lastModified: lastModif!)
-                    self.refreshUploadText.stringValue = "This button allows you to reupload the most recent file if changes were made."
-                }
-            } else if response == NSApplication.ModalResponse.cancel {
-                print("cancelled")
-            }
-        }
-    }
-    
-    @IBAction func refreshLastUpload(_ sender: Any) {
-        guard let lastUploadedFile = lastUploadedFile else {
-            print("Não deveria poder dar refresh")
-            return
-        }
-//        self.serial.write("print('Will reupload file \(lastUploadedFile.url)')")
-        deviceControl.uploadFile(lastUploadedFile.url)
-        if let lastModif = try? getLastModifiedDate(ofFile: lastUploadedFile.url.path) {
-            self.lastUploadedFile!.lastModified = lastModif!
-        }
-        refreshUploadButton.isEnabled = false
-    }
-
 
 }
 
