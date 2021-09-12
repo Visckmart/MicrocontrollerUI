@@ -1,5 +1,5 @@
 # MicrocontrollerUI
-Aplicativo para Mac desenvolvido no início de 2019 para monitorar e controlar um micro-controlador (NodeMCU).
+Pequeno aplicativo para Mac desenvolvido no início de 2019 para monitorar e controlar um micro-controlador (NodeMCU).
 
 Ao conectar um micro-controlador pelo USB no Mac e abrir o aplicativo ele aparecerá na lista de dispositivos conectados.
 Ao ser escolhido, o aplicativo tenta se conectar e **lista todos os arquivos** .lua que estão contidos nele.
